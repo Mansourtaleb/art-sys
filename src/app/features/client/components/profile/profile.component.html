@@ -1,0 +1,371 @@
+<app-navbar></app-navbar>
+
+<main class="profile-page py-5">
+  <div class="container">
+    @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else if (utilisateur()) {
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+          <div class="profile-sidebar">
+            <div class="text-center mb-4">
+              <div class="profile-photo-wrapper">
+                @if (utilisateur()!.photoProfile) {
+                  <img [src]="utilisateur()!.photoProfile" alt="Photo de profil" class="profile-photo">
+                } @else {
+                  <div class="profile-photo-placeholder">
+                    {{ utilisateur()!.nom.charAt(0).toUpperCase() }}
+                  </div>
+                }
+                @if (uploadingPhoto()) {
+                  <div class="photo-upload-overlay">
+                    <div class="spinner-border spinner-border-sm text-white"></div>
+                  </div>
+                }
+              </div>
+              <input
+                type="file"
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                style="display: none"
+              >
+              <button class="btn btn-sm btn-outline-primary mt-3" (click)="fileInput.click()">
+                Changer la photo
+              </button>
+            </div>
+
+            <h5 class="text-center mb-3">{{ utilisateur()!.nom }}</h5>
+            <p class="text-center text-muted small">{{ utilisateur()!.email }}</p>
+
+            <div class="nav flex-column nav-pills">
+              <button
+                class="nav-link"
+                [class.active]="activeTab() === 'infos'"
+                (click)="switchTab('infos')"
+              >
+                Informations personnelles
+              </button>
+              <button
+                class="nav-link"
+                [class.active]="activeTab() === 'password'"
+                (click)="switchTab('password')"
+              >
+                Mot de passe
+              </button>
+              <button
+                class="nav-link"
+                [class.active]="activeTab() === 'adresses'"
+                (click)="switchTab('adresses')"
+              >
+                Adresses de livraison
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="col-lg-9">
+          <!-- Onglet Infos Personnelles -->
+          @if (activeTab() === 'infos') {
+            <div class="profile-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Informations personnelles</h4>
+                <button class="btn btn-outline-primary" (click)="toggleEditMode()">
+                  {{ editMode() ? 'Annuler' : 'Modifier' }}
+                </button>
+              </div>
+
+              @if (profileMessage()) {
+                <div class="alert alert-success">{{ profileMessage() }}</div>
+              }
+
+              @if (editMode()) {
+                <form (ngSubmit)="saveProfile()">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Nom complet</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [(ngModel)]="editData().nom"
+                        name="nom"
+                        required
+                      >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Email</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        [value]="utilisateur()!.email"
+                        disabled
+                      >
+                      <small class="text-muted">L'email ne peut pas être modifié</small>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Téléphone</label>
+                      <input
+                        type="tel"
+                        class="form-control"
+                        [(ngModel)]="editData().telephone"
+                        name="telephone"
+                      >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Date de naissance</label>
+                      <input
+                        type="date"
+                        class="form-control"
+                        [(ngModel)]="editData().dateNaissance"
+                        name="dateNaissance"
+                      >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Genre</label>
+                      <select class="form-control" [(ngModel)]="editData().genre" name="genre">
+                        <option [value]="undefined">Non spécifié</option>
+                        @for (g of genres; track g.value) {
+                          <option [value]="g.value">{{ g.label }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" [disabled]="savingProfile()">
+                    @if (savingProfile()) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Enregistrer
+                  </button>
+                </form>
+              } @else {
+                <div class="info-display">
+                  <div class="info-row">
+                    <strong>Nom :</strong>
+                    <span>{{ utilisateur()!.nom }}</span>
+                  </div>
+                  <div class="info-row">
+                    <strong>Email :</strong>
+                    <span>{{ utilisateur()!.email }}</span>
+                  </div>
+                  <div class="info-row">
+                    <strong>Téléphone :</strong>
+                    <span>{{ utilisateur()!.telephone || 'Non renseigné' }}</span>
+                  </div>
+                  <div class="info-row">
+                    <strong>Date de naissance :</strong>
+                    <span>{{ utilisateur()!.dateNaissance || 'Non renseignée' }}</span>
+                  </div>
+                  <div class="info-row">
+                    <strong>Genre :</strong>
+                    <span>{{ utilisateur()!.genre || 'Non spécifié' }}</span>
+                  </div>
+                  <div class="info-row">
+                    <strong>Membre depuis :</strong>
+                    <span>{{ utilisateur()!.dateInscription | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Onglet Mot de passe -->
+          @if (activeTab() === 'password') {
+            <div class="profile-card">
+              <h4 class="mb-4">Changer le mot de passe</h4>
+
+              @if (passwordMessage()) {
+                <div class="alert alert-success">{{ passwordMessage() }}</div>
+              }
+
+              @if (passwordError()) {
+                <div class="alert alert-danger">{{ passwordError() }}</div>
+              }
+
+              <form (ngSubmit)="changePassword()">
+                <div class="mb-3">
+                  <label class="form-label">Ancien mot de passe</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [(ngModel)]="ancienMotDePasse"
+                    name="ancienMotDePasse"
+                    required
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Nouveau mot de passe</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [(ngModel)]="nouveauMotDePasse"
+                    name="nouveauMotDePasse"
+                    required
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Confirmer le nouveau mot de passe</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [(ngModel)]="confirmMotDePasse"
+                    name="confirmMotDePasse"
+                    required
+                  >
+                </div>
+
+                <button type="submit" class="btn btn-primary" [disabled]="changingPassword()">
+                  @if (changingPassword()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  Changer le mot de passe
+                </button>
+              </form>
+            </div>
+          }
+
+          <!-- Onglet Adresses -->
+          @if (activeTab() === 'adresses') {
+            <div class="profile-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Adresses de livraison</h4>
+                <button class="btn btn-primary" (click)="toggleAdresseForm()">
+                  {{ showAdresseForm() ? 'Annuler' : 'Ajouter une adresse' }}
+                </button>
+              </div>
+
+              @if (showAdresseForm()) {
+                <div class="adresse-form mb-4">
+                  <form (ngSubmit)="ajouterAdresse()">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label">Nom complet</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().nom"
+                          name="nom"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input
+                          type="tel"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().telephone"
+                          name="telephone"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-12 mb-3">
+                        <label class="form-label">Adresse</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().adresse"
+                          name="adresse"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-md-4 mb-3">
+                        <label class="form-label">Ville</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().ville"
+                          name="ville"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-md-4 mb-3">
+                        <label class="form-label">Code postal</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().codePostal"
+                          name="codePostal"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-md-4 mb-3">
+                        <label class="form-label">Pays</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          [(ngModel)]="nouvelleAdresse().pays"
+                          name="pays"
+                          required
+                        >
+                      </div>
+
+                      <div class="col-12 mb-3">
+                        <div class="form-check">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [(ngModel)]="nouvelleAdresse().parDefaut"
+                            name="parDefaut"
+                            id="parDefaut"
+                          >
+                          <label class="form-check-label" for="parDefaut">
+                            Définir comme adresse par défaut
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" [disabled]="savingAdresse()">
+                      @if (savingAdresse()) {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                      }
+                      Ajouter
+                    </button>
+                  </form>
+                </div>
+              }
+
+              @if (utilisateur()!.adresses && utilisateur()!.adresses!.length > 0) {                <div class="adresses-list">
+                  @for (adresse of utilisateur()!.adresses; track $index) {
+                    <div class="adresse-card">
+                      @if (adresse.parDefaut) {
+                        <span class="badge bg-primary mb-2">Par défaut</span>
+                      }
+                      <h6>{{ adresse.nom }}</h6>
+                      <p class="mb-1">{{ adresse.adresse }}</p>
+                      <p class="mb-1">{{ adresse.codePostal }} {{ adresse.ville }}</p>
+                      <p class="mb-1">{{ adresse.pays }}</p>
+                      <p class="text-muted">Tél: {{ adresse.telephone }}</p>
+                      <button class="btn btn-sm btn-outline-danger" (click)="supprimerAdresse($index)">
+                        Supprimer
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="text-muted">Aucune adresse enregistrée</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</main>
+
+<app-footer></app-footer>

@@ -11,7 +11,7 @@ import { Oeuvre, Categorie } from '../../../../core/models';
 @Component({
   selector: 'app-oeuvre-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './oeuvre-list.component.html',
   styleUrl: './oeuvre-list.component.scss'
 })

@@ -12,5 +12,9 @@ export const routes: Routes = [
   {
     path: 'oeuvres',
     loadChildren: () => import('./features/oeuvres/oeuvres.routes').then(m => m.oeuvresRoutes)
+  },
+  {
+    path: 'client',
+    loadChildren: () => import('./features/client/client.routes').then(m => m.clientRoutes)
   }
 ];
