@@ -1,0 +1,103 @@
+.image-gallery {
+  .main-image {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+
+    img {
+      width: 100%;
+      height: 500px;
+      object-fit: cover;
+    }
+  }
+
+  .thumbnails {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      &.active {
+        opacity: 1;
+        border-color: #667eea;
+      }
+    }
+  }
+
+  .no-image {
+    height: 500px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+  }
+}
+
+.oeuvre-details {
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .rating {
+    .stars {
+      color: #ffc107;
+      font-size: 1.2rem;
+    }
+  }
+
+  .price {
+    color: #667eea;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.star-rating {
+  .star {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+
+    &.active {
+      color: #ffc107;
+    }
+
+    &:hover {
+      color: #ffc107;
+    }
+  }
+}
+
+.avis-section {
+  .avis-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+
+    .stars {
+      color: #ffc107;
+      font-size: 0.9rem;
+    }
+  }
+}

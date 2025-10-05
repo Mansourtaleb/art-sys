@@ -1,0 +1,129 @@
+<app-navbar></app-navbar>
+
+<main class="py-5">
+  <div class="container">
+    <h1 class="mb-4">Catalogue des Oeuvres</h1>
+
+    <div class="row">
+      <!-- Sidebar Filtres -->
+      <div class="col-lg-3 mb-4">
+        <div class="filter-card">
+          <h5 class="mb-3">Filtres</h5>
+
+          <!-- Catégorie -->
+          <div class="mb-3">
+            <label class="form-label">Catégorie</label>
+            <select
+              class="form-select"
+              [ngModel]="selectedCategorie()"
+              (ngModelChange)="selectedCategorie.set($event)"
+            >
+              <option value="">Toutes les catégories</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.nom">{{ cat.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Prix Min -->
+          <div class="mb-3">
+            <label class="form-label">Prix minimum (TND)</label>
+            <input
+              type="number"
+              class="form-control"
+              [ngModel]="prixMin()"
+              (ngModelChange)="prixMin.set($event || undefined)"
+              placeholder="0"
+            />
+          </div>
+
+          <!-- Prix Max -->
+          <div class="mb-3">
+            <label class="form-label">Prix maximum (TND)</label>
+            <input
+              type="number"
+              class="form-control"
+              [ngModel]="prixMax()"
+              (ngModelChange)="prixMax.set($event || undefined)"
+              placeholder="1000"
+            />
+          </div>
+
+          <button class="btn btn-primary w-100 mb-2" (click)="applyFilters()">
+            Appliquer
+          </button>
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Liste des oeuvres -->
+      <div class="col-lg-9">
+        @if (loading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+        } @else if (oeuvres().length === 0) {
+          <div class="text-center py-5">
+            <p class="text-muted">Aucune oeuvre ne correspond à vos critères.</p>
+          </div>
+        } @else {
+          <div class="row g-4">
+            @for (oeuvre of oeuvres(); track oeuvre.id) {
+              <div class="col-md-6 col-lg-4">
+                <div class="oeuvre-card" (click)="goToDetail(oeuvre.id)">
+                  @if (oeuvre.images && oeuvre.images.length > 0) {
+                    <img [src]="oeuvre.images[0]" [alt]="oeuvre.titre" class="oeuvre-image">
+                  } @else {
+                    <div class="oeuvre-placeholder">
+                      <span>Pas d'image</span>
+                    </div>
+                  }
+                  <div class="oeuvre-info">
+                    <h5>{{ oeuvre.titre }}</h5>
+                    <p class="text-muted small mb-2">Par {{ oeuvre.artisteNom }}</p>
+                    <span class="badge bg-secondary mb-2">{{ oeuvre.categorie }}</span>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="price">{{ oeuvre.prix }} TND</span>
+                      @if (oeuvre.notemoyenne) {
+                        <span class="rating">
+                          ⭐ {{ oeuvre.notemoyenne.toFixed(1) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <nav class="mt-5">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage() === 0">
+                  <a class="page-link" (click)="goToPage(currentPage() - 1)">Précédent</a>
+                </li>
+
+                @for (page of [].constructor(totalPages()); track $index) {
+                  <li class="page-item" [class.active]="currentPage() === $index">
+                    <a class="page-link" (click)="goToPage($index)">{{ $index + 1 }}</a>
+                  </li>
+                }
+
+                <li class="page-item" [class.disabled]="currentPage() === totalPages() - 1">
+                  <a class="page-link" (click)="goToPage(currentPage() + 1)">Suivant</a>
+                </li>
+              </ul>
+            </nav>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

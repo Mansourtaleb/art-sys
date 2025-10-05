@@ -1,0 +1,134 @@
+<app-navbar></app-navbar>
+
+<main>
+  <!-- Section Bannières -->
+  @if (bannieres().length > 0) {
+    <section class="hero-section">
+      <div id="carouselBannieres" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+          @for (banniere of bannieres(); track banniere.id; let i = $index) {
+            <button
+              type="button"
+              [attr.data-bs-target]="'#carouselBannieres'"
+              [attr.data-bs-slide-to]="i"
+              [class.active]="i === 0">
+            </button>
+          }
+        </div>
+
+        <div class="carousel-inner">
+          @for (banniere of bannieres(); track banniere.id; let i = $index) {
+            <div class="carousel-item" [class.active]="i === 0">
+              <img [src]="banniere.imageUrl" class="d-block w-100" [alt]="banniere.titre">
+              <div class="carousel-caption">
+                <h2>{{ banniere.titre }}</h2>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselBannieres" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselBannieres" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- Section Catégories -->
+  @if (categories().length > 0) {
+    <section class="categories-section py-5">
+      <div class="container">
+        <h2 class="text-center mb-5">Explorez par Catégorie</h2>
+        <div class="row g-4">
+          @for (categorie of categories(); track categorie.id) {
+            <div class="col-md-4 col-lg-3">
+              <div class="category-card" (click)="navigateToOeuvres(categorie.nom)">
+                @if (categorie.imageUrl) {
+                  <img [src]="categorie.imageUrl" [alt]="categorie.nom">
+                } @else {
+                  <div class="category-placeholder">
+                    {{ categorie.nom.charAt(0) }}
+                  </div>
+                }
+                <div class="category-info">
+                  <h5>{{ categorie.nom }}</h5>
+                  @if (categorie.description) {
+                    <p class="text-muted small">{{ categorie.description }}</p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- Section Oeuvres en Vedette -->
+  <section class="featured-section py-5 bg-light">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2>Oeuvres en Vedette</h2>
+        <a routerLink="/oeuvres" class="btn btn-outline-primary">
+          Voir tout
+        </a>
+      </div>
+
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+      } @else if (oeuvresVedette().length === 0) {
+        <div class="text-center py-5">
+          <p class="text-muted">Aucune oeuvre disponible pour le moment.</p>
+        </div>
+      } @else {
+        <div class="row g-4">
+          @for (oeuvre of oeuvresVedette(); track oeuvre.id) {
+            <div class="col-md-6 col-lg-4">
+              <div class="oeuvre-card" (click)="navigateToOeuvreDetail(oeuvre.id)">
+                @if (oeuvre.images && oeuvre.images.length > 0) {
+                  <img [src]="oeuvre.images[0]" [alt]="oeuvre.titre" class="oeuvre-image">
+                } @else {
+                  <div class="oeuvre-placeholder">
+                    <span>Pas d'image</span>
+                  </div>
+                }
+                <div class="oeuvre-info">
+                  <h5>{{ oeuvre.titre }}</h5>
+                  <p class="text-muted small">Par {{ oeuvre.artisteNom }}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="price">{{ oeuvre.prix }} TND</span>
+                    @if (oeuvre.notemoyenne) {
+                      <span class="rating">
+                        ⭐ {{ oeuvre.notemoyenne.toFixed(1) }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Section CTA -->
+  <section class="cta-section py-5">
+    <div class="container text-center">
+      <h2 class="mb-4">Vous êtes artiste ?</h2>
+      <p class="lead mb-4">Partagez vos créations avec le monde entier</p>
+      <a routerLink="/auth/register" class="btn btn-primary btn-lg">
+        Rejoignez-nous
+      </a>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

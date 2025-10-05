@@ -1,0 +1,179 @@
+<app-navbar></app-navbar>
+
+<main class="py-5">
+  <div class="container">
+    @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+    } @else if (oeuvre()) {
+      <div class="row">
+        <!-- Galerie d'images -->
+        <div class="col-lg-6 mb-4">
+          <div class="image-gallery">
+            @if (oeuvre()!.images && oeuvre()!.images.length > 0) {
+              <div class="main-image">
+                <img [src]="oeuvre()!.images[selectedImageIndex()]" [alt]="oeuvre()!.titre">
+              </div>
+              @if (oeuvre()!.images.length > 1) {
+                <div class="thumbnails mt-3">
+                  @for (img of oeuvre()!.images; track $index) {
+                    <img
+                      [src]="img"
+                      [alt]="oeuvre()!.titre"
+                      [class.active]="selectedImageIndex() === $index"
+                      (click)="selectImage($index)"
+                    >
+                  }
+                </div>
+              }
+            } @else {
+              <div class="no-image">
+                <span>Aucune image disponible</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="col-lg-6">
+          <div class="oeuvre-details">
+            <h1>{{ oeuvre()!.titre }}</h1>
+            <p class="text-muted mb-3">
+              Par <strong>{{ oeuvre()!.artisteNom }}</strong>
+            </p>
+
+            @if (oeuvre()!.notemoyenne) {
+              <div class="rating mb-3">
+                <span class="stars">
+                  @for (star of getStars(Math.round(oeuvre()!.notemoyenne || 0)); track $index) {
+                    {{ star }}
+                  }
+                </span>
+                <span class="ms-2">({{ oeuvre()!.avis?.length || 0 }} avis)</span>
+              </div>
+            }
+
+            <div class="price-section mb-4">
+              <h2 class="price">{{ oeuvre()!.prix }} TND</h2>
+              <span class="badge bg-secondary">{{ oeuvre()!.categorie }}</span>
+            </div>
+
+            <div class="mb-4">
+              <h5>Description</h5>
+              <p>{{ oeuvre()!.description }}</p>
+            </div>
+
+            <div class="mb-4">
+              <strong>Quantité disponible :</strong> {{ oeuvre()!.quantiteDisponible }}
+            </div>
+
+            @if (oeuvre()!.quantiteDisponible > 0) {
+              <button class="btn btn-primary btn-lg w-100 mb-3">
+                Ajouter au panier
+              </button>
+            } @else {
+              <button class="btn btn-secondary btn-lg w-100 mb-3" disabled>
+                Rupture de stock
+              </button>
+            }
+
+            <button
+              class="btn btn-outline-primary w-100"
+              (click)="toggleAvisForm()"
+            >
+              Laisser un avis
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire Avis -->
+      @if (showAvisForm()) {
+        <div class="avis-form-section mt-5">
+          <div class="card">
+            <div class="card-body">
+              <h4>Laisser un avis</h4>
+              <form (ngSubmit)="submitAvis()">
+                <div class="mb-3">
+                  <label class="form-label">Note</label>
+                  <div class="star-rating">
+                    @for (i of [1,2,3,4,5]; track i) {
+                      <span
+                        class="star"
+                        [class.active]="i <= noteAvis()"
+                        (click)="noteAvis.set(i)"
+                      >
+                        {{ i <= noteAvis() ? '★' : '☆' }}
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Commentaire</label>
+                  <textarea
+                    class="form-control"
+                    rows="4"
+                    [ngModel]="commentaireAvis()"
+                    (ngModelChange)="commentaireAvis.set($event)"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="submittingAvis()"
+                  >
+                    @if (submittingAvis()) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Publier
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="showAvisForm.set(false)"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Liste des avis -->
+      @if (oeuvre()!.avis && oeuvre()!.avis.length > 0) {
+        <section class="avis-section mt-5">
+          <h3 class="mb-4">Avis des clients</h3>
+          <div class="avis-list">
+            @for (avis of oeuvre()!.avis; track avis.clientId) {
+              <div class="avis-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <strong>{{ avis.clientNom }}</strong>
+                    <div class="stars">
+                      @for (star of getStars(avis.note); track $index) {
+                        {{ star }}
+                      }
+                    </div>
+                  </div>
+                  <small class="text-muted">{{ avis.dateAvis | date:'dd/MM/yyyy' }}</small>
+                </div>
+                <p>{{ avis.commentaire }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  </div>
+</main>
+
+<app-footer></app-footer>

@@ -1,0 +1,65 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Vérification Email</h2>
+      <p>Entrez le code envoyé à <strong>{{ email() }}</strong></p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger" role="alert">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="alert alert-success" role="alert">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="code" class="form-label">Code de vérification</label>
+        <input
+          type="text"
+          class="form-control text-center"
+          id="code"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)"
+          name="code"
+          placeholder="123456"
+          maxlength="6"
+          required
+          style="font-size: 24px; letter-spacing: 10px;"
+        />
+        <small class="text-muted">Le code est valide pendant 24 heures</small>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary w-100 mb-3"
+        [disabled]="loading()"
+      >
+        @if (loading()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Vérification...
+        } @else {
+          Vérifier
+        }
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline-secondary w-100"
+        (click)="resendCode()"
+        [disabled]="loading()"
+      >
+        Renvoyer le code
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <a routerLink="/auth/login" class="auth-link">Retour à la connexion</a>
+    </div>
+  </div>
+</div>
