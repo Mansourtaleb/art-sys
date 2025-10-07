@@ -17,6 +17,7 @@
               class="form-select"
               [ngModel]="selectedCategorie()"
               (ngModelChange)="selectedCategorie.set($event)"
+              name="categorie"
             >
               <option value="">Toutes les catégories</option>
               @for (cat of categories(); track cat.id) {
@@ -33,6 +34,7 @@
               class="form-control"
               [ngModel]="prixMin()"
               (ngModelChange)="prixMin.set($event || undefined)"
+              name="prixMin"
               placeholder="0"
             />
           </div>
@@ -45,6 +47,7 @@
               class="form-control"
               [ngModel]="prixMax()"
               (ngModelChange)="prixMax.set($event || undefined)"
+              name="prixMax"
               placeholder="1000"
             />
           </div>

@@ -1,0 +1,9 @@
+@if (message) {
+  <div class="alert alert-{{ type }} d-flex align-items-center" [class.alert-dismissible]="dismissible" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div class="flex-grow-1">{{ message }}</div>
+    @if (dismissible) {
+      <button type="button" class="btn-close" (click)="onDismiss()" aria-label="Close"></button>
+    }
+  </div>
+}

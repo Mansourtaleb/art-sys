@@ -92,13 +92,13 @@
           @for (oeuvre of oeuvresVedette(); track oeuvre.id) {
             <div class="col-md-6 col-lg-4">
               <div class="oeuvre-card" (click)="navigateToOeuvreDetail(oeuvre.id)">
-                @if (oeuvre.images && oeuvre.images.length > 0) {
-                  <img [src]="oeuvre.images[0]" [alt]="oeuvre.titre" class="oeuvre-image">
-                } @else {
-                  <div class="oeuvre-placeholder">
-                    <span>Pas d'image</span>
-                  </div>
-                }
+                <!-- ✅ APRÈS -->
+                <img
+                  [src]="getValidImageUrl(oeuvre.images && oeuvre.images.length > 0 ? oeuvre.images[0] : '')"
+                  [alt]="oeuvre.titre"
+                  class="oeuvre-image"
+                  (error)="onImageError($event)"
+                >
                 <div class="oeuvre-info">
                   <h5>{{ oeuvre.titre }}</h5>
                   <p class="text-muted small">Par {{ oeuvre.artisteNom }}</p>

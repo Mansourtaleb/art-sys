@@ -71,4 +71,17 @@ export class HomePageComponent implements OnInit {
   navigateToOeuvreDetail(id: string): void {
     this.router.navigate(['/oeuvres', id]);
   }
+  getValidImageUrl(url: string): string {
+    // Si l'URL est valide (commence par http)
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      return url;
+    }
+    // Sinon, retourne un placeholder
+    return 'https://placehold.co/400x300/667eea/ffffff?text=Art+Digital';
+  }
+
+  onImageError(event: any): void {
+    // Si l'image ne charge pas, remplace par le placeholder
+    event.target.src = 'https://placehold.co/400x300/667eea/ffffff?text=Art+Digital';
+  }
 }

@@ -31,7 +31,13 @@ export enum StatutRetour {
 export enum StatutOeuvre {
   DISPONIBLE = 'DISPONIBLE',
   RUPTURE_STOCK = 'RUPTURE_STOCK',
-  ARCHIVE = 'ARCHIVE'
+  ARCHIVE = 'ARCHIVE',
+  VENDU = 'VENDU',
+  EN_PROMOTION = 'EN_PROMOTION',
+  BROUILLON = 'BROUILLON',  // ✅ AJOUTE CETTE LIGNE
+PUBLIE = 'PUBLIE'  // ✅ AJOUTE CETTE LIGNE
+
+
 }
 
 export enum TypeLienBanniere {
