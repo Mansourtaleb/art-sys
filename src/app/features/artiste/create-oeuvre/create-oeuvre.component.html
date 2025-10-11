@@ -1,0 +1,171 @@
+<app-navbar></app-navbar>
+
+<main class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+              <i class="bi bi-plus-circle"></i> Créer une Œuvre
+            </h3>
+          </div>
+
+          <div class="card-body">
+            <form #oeuvreForm="ngForm" (ngSubmit)="submitOeuvre()">
+
+              @if (error()) {
+                <div class="alert alert-danger">
+                  <i class="bi bi-exclamation-triangle"></i> {{ error() }}
+                </div>
+              }
+
+              <!-- Titre -->
+              <div class="mb-3">
+                <label class="form-label">Titre *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="oeuvre().titre"
+                  name="titre"
+                  required
+                  placeholder="Ex: Tableau Moderne"
+                >
+              </div>
+
+              <!-- Description -->
+              <div class="mb-3">
+                <label class="form-label">Description *</label>
+                <textarea
+                  class="form-control"
+                  [(ngModel)]="oeuvre().description"
+                  name="description"
+                  rows="4"
+                  required
+                  placeholder="Décrivez votre œuvre..."
+                ></textarea>
+              </div>
+
+              <!-- Catégorie -->
+              <div class="mb-3">
+                <label class="form-label">Catégorie *</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="oeuvre().categorie"
+                  name="categorie"
+                  required
+                >
+                  <option value="">Sélectionnez une catégorie</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.nom">{{ cat.nom }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="row">
+                <!-- Prix -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Prix (TND) *</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="oeuvre().prix"
+                    name="prix"
+                    min="0"
+                    step="0.01"
+                    required
+                  >
+                </div>
+
+                <!-- Quantité -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Quantité disponible *</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="oeuvre().quantiteDisponible"
+                    name="quantite"
+                    min="1"
+                    required
+                  >
+                </div>
+              </div>
+
+              <!-- Images -->
+              <div class="mb-3">
+                <label class="form-label">Images (URLs) *</label>
+
+                @for (img of oeuvre().images; track $index) {
+                  <div class="input-group mb-2">
+                    <input
+                      type="url"
+                      class="form-control"
+                      [value]="img"
+                      (input)="updateImageUrl($index, $any($event.target).value)"
+                      placeholder="https://exemple.com/image.jpg"
+                    >
+                    @if (oeuvre().images.length > 1) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        (click)="removeImageField($index)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+                  </div>
+                }
+
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="addImageField()"
+                >
+                  <i class="bi bi-plus"></i> Ajouter une image
+                </button>
+
+                <small class="form-text text-muted d-block mt-2">
+                  💡 Astuce : Utilisez des images hébergées en ligne (ex: https://picsum.photos/400/300)
+                </small>
+              </div>
+
+              <!-- Statut -->
+              <div class="mb-4">
+                <label class="form-label">Statut</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="oeuvre().statut"
+                  name="statut"
+                >
+                  <option value="DISPONIBLE">Disponible</option>
+                  <option value="EN_RUPTURE">En rupture de stock</option>
+                </select>
+              </div>
+
+              <!-- Boutons -->
+              <div class="d-flex justify-content-between">
+                <a routerLink="/artiste/mes-oeuvres" class="btn btn-outline-secondary">
+                  <i class="bi bi-arrow-left"></i> Annuler
+                </a>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="loading() || oeuvreForm.invalid"
+                >
+                  @if (loading()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  <i class="bi bi-check-circle"></i> Créer l'œuvre
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

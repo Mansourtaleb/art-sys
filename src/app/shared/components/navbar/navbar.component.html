@@ -1,60 +1,148 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
     <a class="navbar-brand" routerLink="/">
-      <strong>Art Digital</strong>
+      <i class="bi bi-palette-fill"></i> Art Digital
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
+      <ul class="navbar-nav ms-auto">
+        <!-- Accueil -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            Accueil
+            <i class="bi bi-house-fill"></i> Accueil
           </a>
         </li>
+
+        <!-- Œuvres -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/oeuvres" routerLinkActive="active">
-            Oeuvres
+            <i class="bi bi-images"></i> Œuvres
           </a>
         </li>
-      </ul>
 
-      <ul class="navbar-nav">
+        <!-- Panier -->
+        <li class="nav-item">
+          <a class="nav-link position-relative" routerLink="/cart" routerLinkActive="active">
+            <i class="bi bi-cart3"></i> Panier
+            @if (cartItemCount() > 0) {
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ cartItemCount() }}
+              </span>
+            }
+          </a>
+        </li>
+
+        <!-- SI CONNECTÉ -->
         @if (isAuthenticated()) {
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              {{ userName() }}
+
+          <!-- MENU CLIENT -->
+          @if (currentUser()?.role === 'CLIENT') {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/client/profile" routerLinkActive="active">
+                <i class="bi bi-person-fill"></i> Profil
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/client/commandes" routerLinkActive="active">
+                <i class="bi bi-box-seam"></i> Mes Commandes
+              </a>
+            </li>
+          }
+
+          <!-- MENU ARTISTE (DROPDOWN) -->
+          @if (currentUser()?.role === 'ARTISTE') {
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-palette"></i> Artiste
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" routerLink="/artiste/dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/artiste/create-oeuvre">
+                    <i class="bi bi-plus-circle"></i> Créer une Œuvre
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/artiste/mes-oeuvres">
+                    <i class="bi bi-palette"></i> Mes Œuvres
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/artiste/commandes">
+                    <i class="bi bi-box-seam"></i> Commandes Reçues
+                  </a>
+                </li>
+              </ul>
+            </li>
+          }
+
+          <!-- MENU ADMIN (DROPDOWN) -->
+          @if (currentUser()?.role === 'ADMIN') {
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-shield-check"></i> Admin
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" routerLink="/admin/dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item" routerLink="/admin/categories">
+                    <i class="bi bi-tags"></i> Catégories
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/admin/bannieres">
+                    <i class="bi bi-image"></i> Bannières
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/admin/utilisateurs">
+                    <i class="bi bi-people"></i> Utilisateurs
+                  </a>
+                </li>
+              </ul>
+            </li>
+          }
+
+          <!-- Déconnexion -->
+          <li class="nav-item">
+            <a class="nav-link" (click)="logout()" style="cursor: pointer;">
+              <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li>
-                <a class="dropdown-item" (click)="goToDashboard()">
-                  @if (userRole() === 'ADMIN') {
-                    Dashboard Admin
-                  } @else if (userRole() === 'ARTISTE') {
-                    Mes Oeuvres
-                  } @else {
-                    Mon Profil
-                  }
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <a class="dropdown-item text-danger" (click)="logout()">
-                  Déconnexion
-                </a>
-              </li>
-            </ul>
           </li>
+
         } @else {
+          <!-- SI NON CONNECTÉ -->
           <li class="nav-item">
-            <a class="nav-link" routerLink="/auth/login">Connexion</a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-light ms-2" routerLink="/auth/register">
-              S'inscrire
+            <a class="nav-link" routerLink="/auth/login" routerLinkActive="active">
+              <i class="bi bi-box-arrow-in-right"></i> Connexion
             </a>
           </li>
         }

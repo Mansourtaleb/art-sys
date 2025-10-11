@@ -1,12 +1,13 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
-import { OeuvreService } from '../../../../core/services/oeuvre.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { OeuvreService } from '../../../../core/services';
+import { AuthService } from '../../../../core/services';
 import { Oeuvre } from '../../../../core/models';
+import {CartService} from '../../../../core/services/cart.service';
 
 @Component({
   selector: 'app-oeuvre-detail',
@@ -28,6 +29,7 @@ export class OeuvreDetailComponent implements OnInit {
 
   isAuthenticated = signal(false);
   userRole = signal('');
+  private cartService = inject(CartService);
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +81,15 @@ export class OeuvreDetailComponent implements OnInit {
     }
     this.showAvisForm.set(!this.showAvisForm());
   }
+  addToCart(): void {
+    if (this.oeuvre()) {
+      const quantity = 1; // Tu peux ajouter un input pour choisir la quantité
+      this.cartService.addItem(this.oeuvre()!, quantity);
+
+      // Toast notification (temporaire avec alert)
+      alert(`✅ "${this.oeuvre()!.titre}" ajouté au panier !`);
+    }
+  }
 
   submitAvis(): void {
     if (!this.oeuvre()) return;
@@ -104,6 +115,7 @@ export class OeuvreDetailComponent implements OnInit {
       }
     });
   }
+
 
   getStars(note: number): string[] {
     return Array(5).fill('').map((_, i) => i < note ? '★' : '☆');

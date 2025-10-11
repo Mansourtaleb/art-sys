@@ -1,52 +1,25 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
-export class NavbarComponent implements OnInit {
-  isAuthenticated = signal(false);
-  userName = signal('');
-  userRole = signal('');
+export class NavbarComponent {
+  authService = inject(AuthService);
+  cartService = inject(CartService);
 
-  constructor(
-    public authService: AuthService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    this.isAuthenticated.set(this.authService.isAuthenticated());
-    const user = this.authService.currentUser();
-    if (user) {
-      this.userName.set(user.nom);
-      this.userRole.set(user.role);
-    }
-  }
+  isAuthenticated = this.authService.isAuthenticated;
+  currentUser = this.authService.currentUser;
+  cartItemCount = this.cartService.itemCount;
 
   logout(): void {
     this.authService.logout();
-  }
-
-  goToDashboard(): void {
-    const role = this.userRole();
-    switch (role) {
-      case 'ADMIN':
-        this.router.navigate(['/admin/dashboard']);
-        break;
-      case 'ARTISTE':
-        this.router.navigate(['/artiste/mes-oeuvres']);
-        break;
-      case 'CLIENT':
-        this.router.navigate(['/client/profile']);
-        break;
-      default:
-        this.router.navigate(['/']);
-    }
   }
 }
