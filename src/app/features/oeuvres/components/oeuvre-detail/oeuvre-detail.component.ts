@@ -8,6 +8,7 @@ import { OeuvreService } from '../../../../core/services';
 import { AuthService } from '../../../../core/services';
 import { Oeuvre } from '../../../../core/models';
 import {CartService} from '../../../../core/services/cart.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-oeuvre-detail',
@@ -35,8 +36,10 @@ export class OeuvreDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private oeuvreService: OeuvreService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+  private notificationService: NotificationService
+
+) {}
 
   ngOnInit(): void {
     this.isAuthenticated.set(this.authService.isAuthenticated());
@@ -81,14 +84,22 @@ export class OeuvreDetailComponent implements OnInit {
     }
     this.showAvisForm.set(!this.showAvisForm());
   }
-  addToCart(): void {
-    if (this.oeuvre()) {
-      const quantity = 1; // Tu peux ajouter un input pour choisir la quantité
-      this.cartService.addItem(this.oeuvre()!, quantity);
+  addToCart(quantity: number = 1) {
+    const oeuvre = this.oeuvre();
+    if (!oeuvre) return;
 
-      // Toast notification (temporaire avec alert)
-      alert(`✅ "${this.oeuvre()!.titre}" ajouté au panier !`);
-    }
+    // Créer l'objet CartItem à partir de l'Oeuvre
+    const cartItem = {
+      oeuvreId: oeuvre.id,
+      titre: oeuvre.titre,
+      artiste: oeuvre.artisteNom,
+      prix: oeuvre.prix,
+      imageUrl: oeuvre.images?.[0] || '', // ✅ Premier image du tableau
+      stock: oeuvre.quantiteDisponible || 99    // ✅ Stock disponible
+    };
+
+    this.cartService.addItem(cartItem, quantity);
+    this.notificationService.success('Œuvre ajoutée au panier!');
   }
 
   submitAvis(): void {

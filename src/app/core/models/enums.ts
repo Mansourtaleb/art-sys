@@ -20,13 +20,6 @@ export enum StatutProduitPersonnalise {
   REFUSE = 'REFUSE'
 }
 
-export enum StatutRetour {
-  DEMANDE = 'DEMANDE',
-  EN_COURS = 'EN_COURS',
-  ACCEPTE = 'ACCEPTE',
-  REFUSE = 'REFUSE',
-  TERMINE = 'TERMINE'
-}
 
 export enum StatutOeuvre {
   DISPONIBLE = 'DISPONIBLE',
@@ -50,4 +43,34 @@ export enum Genre {
   HOMME = 'HOMME',
   FEMME = 'FEMME',
   AUTRE = 'AUTRE'
+}
+// ... enums existants ...
+
+export enum StatutRetour {
+  DEMANDE = 'DEMANDE',
+  EN_COURS = 'EN_COURS',
+  ACCEPTE = 'ACCEPTE',
+  REFUSE = 'REFUSE',
+  TERMINE = 'TERMINE'
+}
+
+export enum CategorieDesign {
+  ART_ABSTRAIT = 'ART_ABSTRAIT',
+  GEOMETRIQUE = 'GEOMETRIQUE',
+  NATURE = 'NATURE',
+  ANIMAL = 'ANIMAL',
+  TYPOGRAPHIE = 'TYPOGRAPHIE',
+  MINIMALISTE = 'MINIMALISTE',
+  VINTAGE = 'VINTAGE',
+  MODERNE = 'MODERNE'
+}
+
+export enum TypeProduit {
+  TSHIRT = 'TSHIRT',
+  MUG = 'MUG',
+  POSTER = 'POSTER',
+  STICKER = 'STICKER',
+  CARTE = 'CARTE',
+  COUSSIN = 'COUSSIN',
+  TOILE = 'TOILE'
 }

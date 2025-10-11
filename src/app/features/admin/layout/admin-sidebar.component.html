@@ -1,0 +1,51 @@
+<div class="sidebar" [class.collapsed]="collapsed">
+  <!-- Logo -->
+  <div class="sidebar-header">
+    @if (!collapsed) {
+      <h4 class="mb-0 text-white">
+        <i class="bi bi-palette-fill me-2"></i>
+        Admin Panel
+      </h4>
+    } @else {
+      <h4 class="mb-0 text-white text-center">
+        <i class="bi bi-palette-fill"></i>
+      </h4>
+    }
+  </div>
+
+  <!-- Menu Items -->
+  <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+      @for (item of menuItems; track item.route) {
+        <li class="nav-item">
+          <a 
+            [routerLink]="item.route" 
+            routerLinkActive="active"
+            class="nav-link">
+            <i class="bi {{ item.icon }} me-2"></i>
+            @if (!collapsed) {
+              <span>{{ item.label }}</span>
+            }
+            @if (item.badge) {
+              <span class="badge bg-danger ms-auto">{{ item.badge }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    @if (!collapsed) {
+      <a routerLink="/" class="text-white text-decoration-none">
+        <i class="bi bi-box-arrow-left me-2"></i>
+        Retour au site
+      </a>
+    } @else {
+      <a routerLink="/" class="text-white text-decoration-none">
+        <i class="bi bi-box-arrow-left"></i>
+      </a>
+    }
+  </div>
+</div>

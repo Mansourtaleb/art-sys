@@ -8,7 +8,7 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 @Component({
   selector: 'app-cart-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './cart-page.component.html',
   styleUrl: './cart-page.component.scss'
 })

@@ -94,20 +94,19 @@
         }
       </div>
 
-      <!-- Résumé -->
+      <!-- Résumé - COL-LG-4 AJOUTÉ -->
       <div class="col-lg-4">
         <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">Résumé de la commande</h5>
-          </div>
           <div class="card-body">
-            @for (item of items(); track item.oeuvre.id) {
-              <div class="d-flex justify-content-between mb-2">
+            <h5 class="card-title mb-3">Récapitulatif de la commande</h5>
+
+            @for (item of items(); track item.oeuvreId) {
+              <div class="d-flex justify-content-between align-items-center mb-2">
                 <div>
-                  <div>{{ item.oeuvre.titre }}</div>
-                  <small class="text-muted">Qté: {{ item.quantity }}</small>
+                  <div>{{ item.titre }}</div>
+                  <small class="text-muted">Qté: {{ item.quantite }}</small>
                 </div>
-                <strong>{{ item.oeuvre.prix * item.quantity }} DT</strong>
+                <strong>{{ item.prix * item.quantite }} DT</strong>
               </div>
             }
 

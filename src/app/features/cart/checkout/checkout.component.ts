@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
-import { CartService } from '../../../core/services/cart.service';
-import { CommandeService } from '../../../core/services/commande.service';
+import { CartService } from '../../../core/services';
+import { CommandeService } from '../../../core/services';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import {CartItem} from '../../../core/models';
 
 @Component({
   selector: 'app-checkout',
@@ -48,9 +49,9 @@ export class CheckoutComponent {
     try {
       // ✅ STRUCTURE CORRECTE selon CommandeRequest
       const commandeData = {
-        produits: this.items().map(item => ({
-          oeuvreId: item.oeuvre.id,
-          quantite: item.quantity
+        produits: this.items().map((item: CartItem) => ({
+          oeuvreId: item.oeuvreId,  // ✅ Correct
+          quantite: item.quantite     // ✅ Correct
         })),
         adresseLivraison: this.adresse()
       };

@@ -19,7 +19,7 @@ import { CommandesRecuesComponent } from './features/artiste/commandes-recues/co
 import {UtilisateursComponent} from './features/admin/utilisateurs/utilisateurs.component';
 import {BannieresComponent} from './features/admin/bannieres/bannieres.component';
 import {CategoriesComponent} from './features/admin/categories/categories.component';
-import { DashboardComponent as AdminDashboardComponent } from './features/admin/dashboard/dashboard.component';
+import { DashboardComponent as AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 
 
 export const routes: Routes = [
@@ -120,6 +120,10 @@ export const routes: Routes = [
             canActivate: [roleGuard],
             data: { roles: ['ADMIN'] }
           },
+          {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes)
+  },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
       },

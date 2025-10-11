@@ -1,146 +1,138 @@
-<app-navbar></app-navbar>
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Mon Panier</h2>
 
-<main class="py-5">
-  <div class="container">
-    <h1 class="mb-4">
-      <i class="bi bi-cart3"></i> Mon Panier
-      @if (itemCount() > 0) {
-        <span class="badge bg-primary ms-2">{{ itemCount() }}</span>
-      }
-    </h1>
+      @if (items().length === 0) {
+        <div class="alert alert-info">
+          <i class="bi bi-cart-x me-2"></i>
+          Votre panier est vide.
+          <a routerLink="/oeuvres" class="alert-link ms-2">Découvrir nos œuvres</a>
+        </div>
+      } @else {
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="mb-0">Articles ({{ itemCount() }})</h5>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="clearCart()">
+                    <i class="bi bi-trash me-1"></i>
+                    Vider le panier
+                  </button>
+                </div>
 
-    @if (items().length === 0) {
-      <!-- Panier vide -->
-      <div class="text-center py-5">
-        <i class="bi bi-cart-x" style="font-size: 5rem; color: #ccc;"></i>
-        <h3 class="mt-3">Votre panier est vide</h3>
-        <p class="text-muted">Découvrez nos œuvres d'art et ajoutez-les à votre panier</p>
-        <a routerLink="/oeuvres" class="btn btn-primary mt-3">
-          <i class="bi bi-search"></i> Parcourir les œuvres
-        </a>
-      </div>
-    } @else {
-      <div class="row">
-        <!-- Liste des articles -->
-        <div class="col-lg-8">
-          <div class="card">
-            <div class="card-body">
-              @for (item of items(); track item.oeuvre.id) {
-                <div class="cart-item">
-                  <div class="row align-items-center">
-                    <!-- Image -->
-                    <div class="col-md-2">
-                      <img
-                        [src]="getImageUrl(item.oeuvre)"
-                        [alt]="item.oeuvre.titre"
-                        class="img-fluid rounded"
-                      >
-                    </div>
+                @for (item of items(); track item.oeuvreId) {
+                  <div class="cart-item border-bottom py-3">
+                    <div class="row align-items-center">
+                      <div class="col-md-2">
+                        <img
+                          [src]="item.imageUrl || 'assets/placeholder.jpg'"
+                          [alt]="item.titre"
+                          class="img-fluid rounded"
+                          style="height: 80px; object-fit: cover;">
+                      </div>
 
-                    <!-- Infos -->
-                    <div class="col-md-4">
-                      <h5>{{ item.oeuvre.titre }}</h5>
-                      <p class="text-muted mb-0">Par {{ item.oeuvre.artisteNom }}</p>
-                      <small class="text-muted">{{ item.oeuvre.categorie }}</small>
-                    </div>
+                      <div class="col-md-4">
+                        <h5>{{ item.titre }}</h5>
+                        <p class="text-muted mb-0">Par {{ item.artiste }}</p>
+                      </div>
 
-                    <!-- Prix unitaire -->
-                    <div class="col-md-2 text-center">
-                      <strong>{{ item.oeuvre.prix }} DT</strong>
-                    </div>
+                      <div class="col-md-2 text-center">
+                        <strong>{{ item.prix }} DT</strong>
+                      </div>
 
-                    <!-- Quantité -->
-                    <div class="col-md-2">
-                      <div class="input-group input-group-sm">
+                      <div class="col-md-3">
+                        <div class="d-flex align-items-center justify-content-center">
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            [disabled]="item.quantite <= 1"
+                            (click)="updateQuantity(item.oeuvreId, item.quantite - 1)">
+                            <i class="bi bi-dash"></i>
+                          </button>
+
+                          <input
+                            type="number"
+                            class="form-control form-control-sm mx-2 text-center"
+                            style="width: 60px;"
+                            [value]="item.quantite"
+                            [max]="item.stock"
+                            min="1"
+                            readonly>
+
+                          <button
+                            class="btn btn-sm btn-outline-secondary"
+                            [disabled]="item.quantite >= item.stock"
+                            (click)="updateQuantity(item.oeuvreId, item.quantite + 1)">
+                            <i class="bi bi-plus"></i>
+                          </button>
+                        </div>
+                        <small class="text-muted d-block text-center mt-1">
+                          Stock: {{ item.stock }}
+                        </small>
+                      </div>
+
+                      <div class="col-md-1 text-end">
+                        <strong>{{ item.prix * item.quantite }} DT</strong>
+                      </div>
+
+                      <div class="col-12 text-end mt-2">
                         <button
-                          class="btn btn-outline-secondary"
-                          (click)="updateQuantity(item.oeuvre.id, item.quantity - 1)"
-                        >
-                          <i class="bi bi-dash"></i>
-                        </button>
-                        <input
-                          type="text"
-                          class="form-control text-center"
-                          [value]="item.quantity"
-                          readonly
-                        >
-                        <button
-                          class="btn btn-outline-secondary"
-                          (click)="updateQuantity(item.oeuvre.id, item.quantity + 1)"
-                        >
-                          <i class="bi bi-plus"></i>
+                          class="btn btn-sm btn-link text-danger"
+                          (click)="removeItem(item.oeuvreId)">
+                          <i class="bi bi-trash me-1"></i>
+                          Retirer
                         </button>
                       </div>
                     </div>
-
-                    <!-- Total -->
-                    <div class="col-md-1 text-end">
-                      <strong>{{ item.oeuvre.prix * item.quantity }} DT</strong>
-                    </div>
-
-                    <!-- Supprimer -->
-                    <div class="col-md-1 text-end">
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        (click)="removeItem(item.oeuvre.id)"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
                   </div>
-                  <hr>
-                </div>
-              }
+                }
+              </div>
+            </div>
+          </div>
 
-              <div class="text-end mt-3">
-                <button class="btn btn-outline-secondary" (click)="clearCart()">
-                  <i class="bi bi-trash"></i> Vider le panier
+          <div class="col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title mb-3">Résumé de la commande</h5>
+
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Sous-total</span>
+                  <strong>{{ total() }} DT</strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Frais de livraison</span>
+                  <span class="text-muted">Calculés à l'étape suivante</span>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between mb-3">
+                  <strong>Total</strong>
+                  <strong class="text-primary">{{ total() }} DT</strong>
+                </div>
+
+                <button
+                  class="btn btn-primary w-100"
+                  routerLink="/checkout">
+                  Passer la commande
+                  <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+
+                <button
+                  class="btn btn-outline-secondary w-100 mt-2"
+                  routerLink="/oeuvres">
+                  <i class="bi bi-arrow-left me-2"></i>
+                  Continuer mes achats
                 </button>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Résumé -->
-        <div class="col-lg-4">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Résumé de la commande</h5>
-              <hr>
-
-              <div class="d-flex justify-content-between mb-2">
-                <span>Sous-total ({{ itemCount() }} articles)</span>
-                <strong>{{ total() }} DT</strong>
-              </div>
-
-              <div class="d-flex justify-content-between mb-2">
-                <span>Frais de livraison</span>
-                <strong>Gratuit</strong>
-              </div>
-
-              <hr>
-
-              <div class="d-flex justify-content-between mb-3">
-                <h5>Total</h5>
-                <h5 class="text-primary">{{ total() }} DT</h5>
-              </div>
-
-              <button
-                class="btn btn-primary w-100 btn-lg"
-                (click)="goToCheckout()"
-              >
-                <i class="bi bi-check-circle"></i> Passer la commande
-              </button>
-
-              <a routerLink="/oeuvres" class="btn btn-outline-secondary w-100 mt-2">
-                <i class="bi bi-arrow-left"></i> Continuer mes achats
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
+      }
+    </div>
   </div>
-</main>
-
-<app-footer></app-footer>
+</div>
