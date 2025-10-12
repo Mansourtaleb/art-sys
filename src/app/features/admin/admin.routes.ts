@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from '../../core/guards/auth.guard';
-import { RoleGuard } from '../../core/guards/role.guard';
+import { authGuard } from '../../core/guards';
+import { roleGuard } from '../../core/guards';
 import { AdminLayoutComponent } from './layout/admin-layout.component';
 import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
 
@@ -8,11 +8,11 @@ export const adminRoutes: Routes = [
   {
     path: '',
     component: AdminLayoutComponent,
-    canActivate: [AuthGuard, RoleGuard],
+    canActivate: [authGuard, roleGuard],
     data: { requiredRole: 'ADMIN' },
     children: [
       {
-        path: '',
+        path: 'admin',
         redirectTo: 'dashboard',
         pathMatch: 'full'
       },
@@ -21,18 +21,7 @@ export const adminRoutes: Routes = [
         component: AdminDashboardComponent
       },
       // Les autres routes seront ajoutées ici
-      {
-        path: 'oeuvres',
-        loadChildren: () => import('./oeuvres/oeuvres.routes').then(m => m.oeuvresAdminRoutes)
-      },
-      {
-        path: 'categories',
-        loadChildren: () => import('./categories/categories.routes').then(m => m.categoriesAdminRoutes)
-      },
-      {
-        path: 'bannieres',
-        loadChildren: () => import('./bannieres/bannieres.routes').then(m => m.bannieresAdminRoutes)
-      }
+
     ]
   }
 ];

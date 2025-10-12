@@ -1,14 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { StatistiquesService, StatistiquesGlobales } from '../../../core/services/statistiques.service';
+import { StatistiquesService, StatistiquesGlobales } from '../../../core/services';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.css']
+  styleUrls: []
 })
 export class AdminDashboardComponent implements OnInit {
   stats = signal<StatistiquesGlobales | null>(null);

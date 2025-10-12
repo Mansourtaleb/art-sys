@@ -19,7 +19,7 @@ import { CommandesRecuesComponent } from './features/artiste/commandes-recues/co
 import {UtilisateursComponent} from './features/admin/utilisateurs/utilisateurs.component';
 import {BannieresComponent} from './features/admin/bannieres/bannieres.component';
 import {CategoriesComponent} from './features/admin/categories/categories.component';
-import { DashboardComponent as AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
+import {   AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 
 
 export const routes: Routes = [
