@@ -1,14 +1,5 @@
 import { RoleUtilisateur, Genre } from './enums';
-
-export interface AdresseLivraison {
-  nom: string;
-  telephone: string;
-  adresse: string;
-  ville: string;
-  codePostal: string;
-  pays: string;
-  parDefaut?: boolean;
-}
+import { AdresseLivraison } from './adresse-livraison.model';
 
 export interface Utilisateur {
   id: string;

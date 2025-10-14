@@ -1,172 +1,109 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { OeuvreService } from '../../../core/services/oeuvre.service';
 import { CategorieService } from '../../../core/services/categorie.service';
-import { Oeuvre, StatutOeuvre } from '../../../core/models';
+import { Oeuvre } from '../../../core/models/oeuvre.model';
+import { Categorie } from '../../../core/models/categorie.model';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-gestion-produits',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './gestion-produits.component.html',
   styleUrl: './gestion-produits.component.scss'
 })
 export class GestionProduitsComponent implements OnInit {
   oeuvres = signal<Oeuvre[]>([]);
-  categories = signal<any[]>([]);
-  loading = signal(true);
+  categories = signal<Categorie[]>([]);
+  loading = signal(false);
+  searchTerm = '';
+  filterCategorie = '';
 
-  // Filtres
-  searchTerm = signal('');
-  filtreCategorie = signal('');
-  filtreStatut = signal('');
+  // Utiliser computed signal pour le filtrage
+  oeuvresFiltered = computed(() => {
+    let filtered = this.oeuvres();
 
-  // Modal
-  showModal = signal(false);
-  editMode = signal(false);
-  currentOeuvre = signal<any>({
-    titre: '',
-    description: '',
-    categorie: '',
-    prix: 0,
-    quantiteDisponible: 1,
-    images: [''],
-    statut: StatutOeuvre.DISPONIBLE
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(o =>
+        o.titre.toLowerCase().includes(term) ||
+        o.description?.toLowerCase().includes(term) ||
+        o.artisteNom?.toLowerCase().includes(term)
+      );
+    }
+
+    if (this.filterCategorie) {
+      filtered = filtered.filter(o => o.categorieId === this.filterCategorie);
+    }
+
+    return filtered;
   });
-
-  StatutOeuvre = StatutOeuvre;
 
   constructor(
     private oeuvreService: OeuvreService,
     private categorieService: CategorieService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadOeuvres();
     this.loadCategories();
   }
 
-  loadOeuvres(): void {
+  loadOeuvres() {
     this.loading.set(true);
     this.oeuvreService.getAllOeuvres().subscribe({
-      next: (response: any) => {
-        this.oeuvres.set(response.content || response);
+      next: (data: any) => {
+        const oeuvres = data.content || data;
+        this.oeuvres.set(oeuvres);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erreur:', err);
+        console.error('Erreur chargement oeuvres:', err);
         this.loading.set(false);
       }
     });
   }
 
-  loadCategories(): void {
+  loadCategories() {
     this.categorieService.getAllCategories().subscribe({
-      next: (response: any) => {
-        this.categories.set(response.content || response);
+      next: (data: any) => {
+        const categories = data.content || data;
+        this.categories.set(categories);
       },
-      error: (err) => console.error('Erreur catégories:', err)
+      error: (err) => console.error('Erreur chargement catégories:', err)
     });
   }
 
-  get oeuvresFiltered(): Oeuvre[] {
-    return this.oeuvres().filter(o => {
-      const matchSearch = this.searchTerm() === '' ||
-        o.titre.toLowerCase().includes(this.searchTerm().toLowerCase());
-      const matchCategorie = this.filtreCategorie() === '' ||
-        o.categorie === this.filtreCategorie();
-      const matchStatut = this.filtreStatut() === '' ||
-        o.statut === this.filtreStatut();
-      return matchSearch && matchCategorie && matchStatut;
-    });
+  filterOeuvres() {
+    // Le filtrage est automatique via computed signal
   }
 
-  openModal(oeuvre?: Oeuvre): void {
-    if (oeuvre) {
-      this.editMode.set(true);
-      this.currentOeuvre.set({ ...oeuvre });
-    } else {
-      this.editMode.set(false);
-      this.currentOeuvre.set({
-        titre: '',
-        description: '',
-        categorie: '',
-        prix: 0,
-        quantiteDisponible: 1,
-        images: [''],
-        statut: StatutOeuvre.DISPONIBLE
-      });
-    }
-    this.showModal.set(true);
+  openModal() {
+    // Implémenter l'ouverture du modal pour ajouter une oeuvre
+    console.log('Ouvrir modal création');
   }
 
-  closeModal(): void {
-    this.showModal.set(false);
+  editOeuvre(oeuvre: Oeuvre) {
+    // Implémenter l'édition
+    console.log('Éditer oeuvre:', oeuvre);
   }
 
-  saveOeuvre(): void {
-    const oeuvre = this.currentOeuvre();
-
-    if (this.editMode()) {
-      this.oeuvreService.updateOeuvre(oeuvre.id, oeuvre).subscribe({
+  deleteOeuvre(id: string) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette œuvre ?')) {
+      this.oeuvreService.deleteOeuvre(id).subscribe({
         next: () => {
+          console.log('Œuvre supprimée');
           this.loadOeuvres();
-          this.closeModal();
         },
-        error: (err) => alert('Erreur: ' + err.error?.message)
-      });
-    } else {
-      this.oeuvreService.creerOeuvre(oeuvre).subscribe({
-        next: () => {
-          this.loadOeuvres();
-          this.closeModal();
-        },
-        error: (err) => alert('Erreur: ' + err.error?.message)
+        error: (err) => console.error('Erreur suppression:', err)
       });
     }
-  }
-
-  deleteOeuvre(id: string): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;
-
-    this.oeuvreService.deleteOeuvre(id).subscribe({
-      next: () => this.loadOeuvres(),
-      error: (err) => alert('Erreur: ' + err.error?.message)
-    });
-  }
-
-  addImageField(): void {
-    const current = this.currentOeuvre();
-    current.images.push('');
-    this.currentOeuvre.set({ ...current });
-  }
-
-  removeImageField(index: number): void {
-    const current = this.currentOeuvre();
-    current.images.splice(index, 1);
-    this.currentOeuvre.set({ ...current });
-  }
-
-  getStatutBadge(statut: StatutOeuvre): string {
-    const badges: { [key in StatutOeuvre]: string } = {
-      [StatutOeuvre.DISPONIBLE]: 'bg-success',
-      [StatutOeuvre.RUPTURE_STOCK]: 'bg-danger',
-      [StatutOeuvre.ARCHIVE]: 'bg-secondary',
-      [StatutOeuvre.VENDU]: 'bg-info',
-      [StatutOeuvre.EN_PROMOTION]: 'bg-warning',
-      [StatutOeuvre.BROUILLON]: 'bg-secondary',
-      [StatutOeuvre.PUBLIE]: 'bg-primary'
-    };
-    return badges[statut] || 'bg-secondary';
-  }
-
-  getImageUrl(images: string[]): string {
-    if (images && images.length > 0 && images[0]) {
-      return images[0];
-    }
-    return 'https://placehold.co/150x150/667eea/ffffff?text=Art';
   }
 }
+
+
+
+

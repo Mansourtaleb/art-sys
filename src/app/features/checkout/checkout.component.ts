@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { FraisLivraisonService } from '../../core/services/frais-livraison.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
-import { AdresseLivraison } from '../../core/models/utilisateur.model';
+import { AdresseLivraison } from '../../core/models/adresse-livraison.model';
 
 @Component({
   selector: 'app-checkout',
@@ -19,10 +19,16 @@ import { AdresseLivraison } from '../../core/models/utilisateur.model';
   styleUrl: './checkout.component.scss'
 })
 export class CheckoutComponent implements OnInit {
-  // Étapes
-  etapeActuelle = signal(1);
+  // Utiliser inject() pour éviter les erreurs d'initialisation
+  private cartService = inject(CartService);
+  private commandeService = inject(CommandeService);
+  private utilisateurService = inject(UtilisateurService);
+  private authService = inject(AuthService);
+  private fraisLivraisonService = inject(FraisLivraisonService);
+  private router = inject(Router);
 
-  // Données
+  // Propriétés
+  etapeActuelle = signal(1);
   items = this.cartService.items;
   total = this.cartService.total;
   fraisLivraison = signal(0);
@@ -40,127 +46,115 @@ export class CheckoutComponent implements OnInit {
   });
   modeNouvelleAdresse = signal(false);
 
-  // Loading & errors
+  // État
   loading = signal(false);
   error = signal<string | null>(null);
-  success = signal(false);
 
-  constructor(
-    private cartService: CartService,
-    private commandeService: CommandeService,
-    private utilisateurService: UtilisateurService,
-    private authService: AuthService,
-    private fraisLivraisonService: FraisLivraisonService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    if (this.items().length === 0) {
-      this.router.navigate(['/panier']);
-      return;
-    }
-
+  ngOnInit() {
     this.loadAdresses();
-    this.calculerTotal();
+    this.calculerTotalFinal();
   }
 
-  loadAdresses(): void {
-    const userId = this.authService.currentUser()?.id;
-    if (!userId) return;
-
-    this.utilisateurService.getUtilisateurById(userId).subscribe({
-      next: (user) => {
-        this.adresses.set(user.adresses || []);
-        const adresseParDefaut = user.adresses?.find(a => a.parDefaut);
-        if (adresseParDefaut) {
-          this.selectionnerAdresse(adresseParDefaut);
+  loadAdresses() {
+    const userId = this.authService.currentUser()?.userId; // Utiliser userId au lieu de id
+    if (userId) {
+      this.utilisateurService.getAdresses(userId).subscribe({
+        next: (adresses: AdresseLivraison[]) => this.adresses.set(adresses),
+        error: (err: any) => {
+          console.error('Erreur chargement adresses:', err);
+          this.error.set('Impossible de charger les adresses');
         }
-      },
-      error: (err) => console.error('Erreur chargement adresses:', err)
-    });
+      });
+    }
   }
 
-  selectionnerAdresse(adresse: AdresseLivraison): void {
-    this.adresseSelectionnee.set(adresse);
-    this.calculerFraisLivraison(adresse.ville);
-  }
+  calculerFraisLivraison() {
+    const ville = this.adresseSelectionnee()?.ville || this.nouvelleAdresse().ville;
+    if (ville) {
+      // Calculer les frais selon la ville
+      let frais = 10; // Par défaut
 
-  toggleNouvelleAdresse(): void {
-    this.modeNouvelleAdresse.set(!this.modeNouvelleAdresse());
-  }
-
-  calculerFraisLivraison(ville: string): void {
-    this.fraisLivraisonService.calculerFrais(ville, this.total()).subscribe({
-      next: (response) => {
-        this.fraisLivraison.set(response.fraisStandard);
-        this.calculerTotal();
-      },
-      error: () => {
-        // Frais par défaut si erreur
-        this.fraisLivraison.set(7);
-        this.calculerTotal();
+      if (ville === 'Tunis') {
+        frais = 7;
+      } else if (['Ariana', 'Ben Arous', 'Manouba'].includes(ville)) {
+        frais = 8;
       }
-    });
+
+      // Livraison gratuite au-dessus de 200 DT
+      if (this.total() >= 200) {
+        frais = 0;
+      }
+
+      this.fraisLivraison.set(frais);
+      this.calculerTotalFinal();
+    }
   }
 
-  calculerTotal(): void {
+  calculerTotalFinal() {
     this.totalFinal.set(this.total() + this.fraisLivraison());
   }
 
-  allerEtape(etape: number): void {
-    if (etape === 2 && !this.adresseSelectionnee() && !this.modeNouvelleAdresse()) {
-      this.error.set('Veuillez sélectionner une adresse de livraison');
-      return;
-    }
-    this.error.set(null);
-    this.etapeActuelle.set(etape);
+  selectAdresse(adresse: AdresseLivraison) {
+    this.adresseSelectionnee.set(adresse);
+    this.modeNouvelleAdresse.set(false);
+    this.calculerFraisLivraison();
   }
 
-  confirmerCommande(): void {
+  toggleNouvelleAdresse() {
+    this.modeNouvelleAdresse.set(!this.modeNouvelleAdresse());
+    if (this.modeNouvelleAdresse()) {
+      this.adresseSelectionnee.set(null);
+    }
+  }
+
+  nextStep() {
+    if (this.etapeActuelle() < 3) {
+      this.etapeActuelle.update(v => v + 1);
+    }
+  }
+
+  previousStep() {
+    if (this.etapeActuelle() > 1) {
+      this.etapeActuelle.update(v => v - 1);
+    }
+  }
+
+  passerCommande() {
     this.loading.set(true);
     this.error.set(null);
 
-    let adresse = this.adresseSelectionnee();
+    const adresse = this.adresseSelectionnee() || this.nouvelleAdresse();
 
-    // Si nouvelle adresse, l'utiliser
-    if (this.modeNouvelleAdresse()) {
-      adresse = this.nouvelleAdresse();
-    }
-
-    if (!adresse) {
-      this.error.set('Adresse de livraison manquante');
+    if (!adresse.rue || !adresse.ville) {
+      this.error.set('Veuillez renseigner une adresse de livraison');
       this.loading.set(false);
       return;
     }
 
-    const request = {
+    const commande = {
       produits: this.items().map(item => ({
-        oeuvreId: item.oeuvreId,
-        quantite: item.quantity
+        oeuvreId: item.oeuvreId,  // ✅ Correct
+        quantite: item.quantite
       })),
       adresseLivraison: adresse
     };
 
-    this.commandeService.creerCommande(request).subscribe({
-      next: (commande) => {
-        this.success.set(true);
-        this.cartService.clear();
-
-        setTimeout(() => {
-          this.router.navigate(['/mes-commandes']);
-        }, 2000);
+    this.commandeService.creerCommande(commande).subscribe({
+      next: (response: any) => {
+        this.cartService.clearCart();
+        this.router.navigate(['/client/commandes'], {
+          queryParams: { success: true, orderId: response.id }
+        });
       },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Erreur lors de la création de la commande');
+      error: (err: any) => {
+        console.error('Erreur commande:', err);
+        this.error.set(err.error?.message || 'Erreur lors de la commande');
         this.loading.set(false);
       }
     });
   }
-
-  getImageUrl(oeuvre: any): string {
-    if (oeuvre.imageUrl && (oeuvre.imageUrl.startsWith('http://') || oeuvre.imageUrl.startsWith('https://'))) {
-      return oeuvre.imageUrl;
-    }
-    return 'https://placehold.co/100x100/667eea/ffffff?text=Art';
-  }
 }
+
+
+
+

@@ -1,4 +1,4 @@
-export interface CartItem {
+﻿export interface CartItem {
   oeuvreId: string;
   titre: string;
   artiste: string;
@@ -11,5 +11,9 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[];
   total: number;
-  nombreArticles: number;
+  nombreArticles?: number;
 }
+
+
+
+

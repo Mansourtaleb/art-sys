@@ -1,107 +1,90 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommandeService } from '../../../core/services/commande.service';
-import { Commande, StatutCommande, StatutCommandeLabels, StatutCommandeColors } from '../../../core/models';
+import { Commande } from '../../../core/models/commande.model';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-gestion-commandes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './gestion-commandes.component.html',
   styleUrl: './gestion-commandes.component.scss'
 })
 export class GestionCommandesComponent implements OnInit {
   commandes = signal<Commande[]>([]);
-  loading = signal(true);
-
-  filtreStatut = signal('');
-  searchTerm = signal('');
-
-  showDetailModal = signal(false);
   selectedCommande = signal<Commande | null>(null);
+  loading = signal(false);
+  searchTerm = signal('');
+  filterStatut = signal('');
 
-  StatutCommande = StatutCommande;
-  StatutCommandeLabels = StatutCommandeLabels;
-  StatutCommandeColors = StatutCommandeColors;
+  // Utiliser computed signal au lieu de getter
+  commandesFiltered = computed(() => {
+    let filtered = this.commandes();
+
+    if (this.searchTerm()) {
+      const term = this.searchTerm().toLowerCase();
+      filtered = filtered.filter(c =>
+        c.numeroCommande.toLowerCase().includes(term) ||
+        c.clientNom?.toLowerCase().includes(term) ||
+        c.clientEmail?.toLowerCase().includes(term)
+      );
+    }
+
+    if (this.filterStatut()) {
+      filtered = filtered.filter(c => c.statut === this.filterStatut());
+    }
+
+    return filtered;
+  });
 
   constructor(private commandeService: CommandeService) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadCommandes();
   }
 
-  loadCommandes(): void {
+  loadCommandes() {
     this.loading.set(true);
     this.commandeService.getAllCommandes().subscribe({
-      next: (response: any) => {
-        this.commandes.set(response.content || response);
+      next: (data: any) => {
+        const commandes = data.content || data;
+        this.commandes.set(commandes);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erreur:', err);
+        console.error('Erreur chargement commandes:', err);
         this.loading.set(false);
       }
     });
   }
 
-  get commandesFiltered(): Commande[] {
-    return this.commandes().filter(c => {
-      const matchStatut = this.filtreStatut() === '' || c.statut === this.filtreStatut();
-      const matchSearch = this.searchTerm() === '' ||
-        c.clientNom.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
-        c.id.toLowerCase().includes(this.searchTerm().toLowerCase());
-      return matchStatut && matchSearch;
-    });
-  }
-
-  viewDetails(commande: Commande): void {
-    this.selectedCommande.set(commande);
-    this.showDetailModal.set(true);
-  }
-
-  closeDetailModal(): void {
-    this.showDetailModal.set(false);
-  }
-
-  changerStatut(commandeId: string, nouveauStatut: StatutCommande): void {
-    this.commandeService.updateStatutCommande(commandeId, nouveauStatut).subscribe({
+  updateStatut(commandeId: string, statut: string) {
+    this.commandeService.updateStatutCommande(commandeId, statut as any).subscribe({
       next: () => {
+        console.log('Statut mis à jour');
         this.loadCommandes();
-        if (this.selectedCommande()?.id === commandeId) {
-          this.closeDetailModal();
-        }
       },
-      error: (err) => alert('Erreur: ' + err.error?.message)
+      error: (err: any) => console.error('Erreur mise à jour statut:', err)
     });
   }
 
-  getStatutBadge(statut: StatutCommande): string {
-    return `bg-${StatutCommandeColors[statut]}`;
+  viewDetails(commande: Commande) {
+    this.selectedCommande.set(commande);
   }
 
-  getStatutLabel(statut: StatutCommande): string {
-    return StatutCommandeLabels[statut];
+  // Méthodes pour gérer les inputs
+  updateSearchTerm(value: string) {
+    this.searchTerm.set(value);
   }
 
-  formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  getProchainStatuts(statutActuel: StatutCommande): StatutCommande[] {
-    const workflow: { [key in StatutCommande]?: StatutCommande[] } = {
-      [StatutCommande.EN_ATTENTE]: [StatutCommande.CONFIRMEE, StatutCommande.ANNULEE],
-      [StatutCommande.CONFIRMEE]: [StatutCommande.EN_PREPARATION, StatutCommande.ANNULEE],
-      [StatutCommande.EN_PREPARATION]: [StatutCommande.EXPEDIE],
-      [StatutCommande.EXPEDIE]: [StatutCommande.LIVREE]
-    };
-    return workflow[statutActuel] || [];
+  updateFilterStatut(value: string) {
+    this.filterStatut.set(value);
   }
 }
+
+
+
+

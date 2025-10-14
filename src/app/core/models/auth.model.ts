@@ -1,4 +1,4 @@
-import { RoleUtilisateur } from './enums';
+﻿import { RoleUtilisateur } from './enums';
 
 export interface RegisterRequest {
   nom: string;
@@ -28,9 +28,13 @@ export interface ResetPasswordDTO {
 
 export interface AuthResponse {
   token: string;
-  userId: string;
+  userId: string; // Changer 'id' en 'userId'
   nom: string;
   email: string;
   role: RoleUtilisateur;
   emailVerifie: boolean;
 }
+
+
+
+

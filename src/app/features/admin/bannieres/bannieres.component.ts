@@ -204,6 +204,12 @@ export class BannieresComponent {
     const found = this.typesLiens.find(t => t.value === type);
     return found ? found.label : type;
   }
+
+  getPlaceholder(typeLien: string): string {
+    if (typeLien === 'OEUVRE') return 'ID de l\'oeuvre';
+    if (typeLien === 'CATEGORIE') return 'Nom de la catégorie';
+    return 'https://exemple.com';
+  }
 }
 
 

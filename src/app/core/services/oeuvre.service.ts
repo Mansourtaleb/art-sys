@@ -40,7 +40,7 @@ export class OeuvreService {
     return this.http.get<Page<Oeuvre>>(`${this.apiUrl}/artiste/${artisteId}?page=${page}&size=${size}`);
   }
 
-  creerOeuvre(oeuvre: OeuvreRequest): Observable<Oeuvre> {
+  creerOeuvre(oeuvre: OeuvreRequest | FormData): Observable<Oeuvre> {
     return this.http.post<Oeuvre>(this.apiUrl, oeuvre);
   }
 

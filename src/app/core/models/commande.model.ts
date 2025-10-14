@@ -1,5 +1,5 @@
 import { StatutCommande } from './enums';
-import { AdresseLivraison } from './utilisateur.model';
+import { AdresseLivraison } from './adresse-livraison.model';
 
 export interface ProduitCommande {
   oeuvreId: string;
@@ -11,9 +11,13 @@ export interface ProduitCommande {
 
 export interface Commande {
   id: string;
+  numeroCommande: string;
   clientId: string;
   clientNom: string;
+  clientEmail?: string;
+  clientTelephone?: string;
   produits: ProduitCommande[];
+  items?: ProduitCommande[]; // Alias pour compatibilité
   montantTotal: number;
   adresseLivraison: AdresseLivraison;
   statut: StatutCommande;

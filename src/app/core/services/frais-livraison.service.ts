@@ -1,72 +1,92 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { FraisLivraison, FraisLivraisonRequest, FraisLivraisonCalcul, Page } from '../models';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FraisLivraisonService {
-  private apiUrl = `${environment.apiUrl}/frais-livraison`;
 
-  constructor(private http: HttpClient) {}
+  private fraisParVille = new Map([
+    ['Tunis', 7],
+    ['Ariana', 8],
+    ['Ben Arous', 8],
+    ['Manouba', 8],
+    ['Nabeul', 10],
+    ['Sousse', 12],
+    ['Sfax', 15],
+    ['Monastir', 12],
+    ['Bizerte', 10],
+    ['Zaghouan', 10],
+    ['Siliana', 12],
+    ['Kairouan', 12],
+    ['Kasserine', 15],
+    ['Sidi Bouzid', 15],
+    ['Mahdia', 12],
+    ['Gabes', 15],
+    ['Medenine', 18],
+    ['Tataouine', 20],
+    ['Gafsa', 18],
+    ['Tozeur', 20],
+    ['Kebili', 20],
+    ['Kef', 15],
+    ['Jendouba', 15],
+    ['Beja', 12]
+  ]);
 
-  // Créer frais de livraison
-  createFraisLivraison(frais: FraisLivraisonRequest): Observable<FraisLivraison> {
-    return this.http.post<FraisLivraison>(this.apiUrl, frais);
+  constructor() {}
+
+  /**
+   * Calculer les frais de livraison selon la ville et le montant
+   */
+  calculerFrais(ville: string, montantCommande: number): Observable<number> {
+    let frais = this.fraisParVille.get(ville) || 10; // Par défaut 10 DT
+
+    // Livraison gratuite pour les commandes >= 200 DT
+    if (montantCommande >= 200) {
+      frais = 0;
+    }
+
+    return of(frais);
   }
 
-  // Récupérer tous les frais avec pagination
-  getAllFraisLivraison(page: number = 0, size: number = 10): Observable<Page<FraisLivraison>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-    return this.http.get<Page<FraisLivraison>>(this.apiUrl, { params });
+  /**
+   * Obtenir la liste des villes disponibles pour la livraison
+   */
+  getVillesDisponibles(): string[] {
+    return Array.from(this.fraisParVille.keys()).sort();
   }
 
-  // Récupérer frais par ID
-  getFraisLivraisonById(id: string): Observable<FraisLivraison> {
-    return this.http.get<FraisLivraison>(`${this.apiUrl}/${id}`);
+  /**
+   * Vérifier si une ville est disponible pour la livraison
+   */
+  isVilleDisponible(ville: string): boolean {
+    return this.fraisParVille.has(ville);
   }
 
-  // Mettre à jour frais de livraison
-  updateFraisLivraison(id: string, frais: FraisLivraisonRequest): Observable<FraisLivraison> {
-    return this.http.put<FraisLivraison>(`${this.apiUrl}/${id}`, frais);
+  /**
+   * Obtenir les frais pour une ville spécifique
+   */
+  getFraisParVille(ville: string): number {
+    return this.fraisParVille.get(ville) || 10;
   }
 
-  // Supprimer frais de livraison
-  deleteFraisLivraison(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
+  /**
+   * Estimer le délai de livraison selon la ville
+   */
+  getDelaiLivraison(ville: string): string {
+    const villesProches = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba'];
+    const villesMoyennes = ['Nabeul', 'Sousse', 'Monastir', 'Bizerte', 'Zaghouan', 'Beja'];
 
-  // Récupérer frais actifs
-  getFraisLivraisonActifs(): Observable<FraisLivraison[]> {
-    return this.http.get<FraisLivraison[]>(`${this.apiUrl}/actifs`);
-  }
-
-  // Calculer frais de livraison
-  calculerFraisLivraison(ville: string, montantCommande: number): Observable<FraisLivraisonCalcul> {
-    const params = new HttpParams()
-      .set('ville', ville)
-      .set('montantCommande', montantCommande.toString());
-    return this.http.get<FraisLivraisonCalcul>(`${this.apiUrl}/calculer`, { params });
-  }
-
-  // Récupérer frais par ville
-  getFraisByVille(ville: string): Observable<FraisLivraison> {
-    const params = new HttpParams().set('ville', ville);
-    return this.http.get<FraisLivraison>(`${this.apiUrl}/ville`, { params });
-  }
-
-  // Récupérer frais par région
-  getFraisByRegion(region: string): Observable<FraisLivraison[]> {
-    const params = new HttpParams().set('region', region);
-    return this.http.get<FraisLivraison[]>(`${this.apiUrl}/region`, { params });
-  }
-
-  // Activer/Désactiver
-  toggleActif(id: string): Observable<FraisLivraison> {
-    return this.http.patch<FraisLivraison>(`${this.apiUrl}/${id}/toggle-actif`, {});
+    if (villesProches.includes(ville)) {
+      return '24-48 heures';
+    } else if (villesMoyennes.includes(ville)) {
+      return '2-3 jours ouvrables';
+    } else {
+      return '3-5 jours ouvrables';
+    }
   }
 }
+
+
+
+

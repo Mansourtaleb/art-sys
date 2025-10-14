@@ -95,7 +95,7 @@ export class OeuvreDetailComponent implements OnInit {
       artiste: oeuvre.artisteNom,
       prix: oeuvre.prix,
       imageUrl: oeuvre.images?.[0] || '', // ✅ Premier image du tableau
-      stock: oeuvre.quantiteDisponible || 99    // ✅ Stock disponible
+      stock: oeuvre.quantiteDisponible || 99 // ✅ Stock disponible
     };
 
     this.cartService.addItem(cartItem, quantity);

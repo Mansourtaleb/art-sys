@@ -13,11 +13,16 @@ export interface Oeuvre {
   titre: string;
   description: string;
   categorie: string;
+  categorieId?: string;
+  categorieNom?: string;
   prix: number;
   quantiteDisponible: number;
+  stockDisponible?: number; // Alias pour quantiteDisponible
+  disponible?: boolean;
   artisteId: string;
   artisteNom: string;
   images: string[];
+  imageUrl?: string; // Première image pour affichage
   statut: StatutOeuvre;
   dateCreation: Date;
   avis: AvisOeuvre[];

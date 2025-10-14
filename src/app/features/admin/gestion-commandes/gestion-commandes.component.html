@@ -1,24 +1,78 @@
-<app-navbar />
+<app-navbar></app-navbar>
 
-<div class="container-fluid py-4">
-  <div class="row mb-4">
-    <div class="col-12">
-      <h2>📦 Gestion des commandes</h2>
+<div class="container-fluid mt-4">
+  <h2 class="mb-4">Gestion des Commandes</h2>
+
+  <!-- Filtres -->
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text"
+             class="form-control"
+             placeholder="Rechercher par numéro ou client..."
+             [value]="searchTerm()"
+             (input)="updateSearchTerm($any($event.target).value)">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select"
+              [value]="filterStatut()"
+              (change)="updateFilterStatut($any($event.target).value)">
+        <option value="">Tous les statuts</option>
+        <option value="EN_ATTENTE">En attente</option>
+        <option value="CONFIRMEE">Confirmée</option>
+        <option value="EN_PREPARATION">En préparation</option>
+        <option value="EXPEDIE">Expédiée</option>
+        <option value="LIVREE">Livrée</option>
+        <option value="ANNULEE">Annulée</option>
+      </select>
+    </div>
+    <div class="col-md-5 text-end">
+      <button class="btn btn-primary" (click)="loadCommandes()">
+        <i class="bi bi-arrow-clockwise"></i> Actualiser
+      </button>
     </div>
   </div>
 
-  <!-- Filtres -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="🔍 Rechercher par client ou ID..."
-                 [(ngModel)]="searchTerm" (ngModelChange)="searchTerm.set($event)">
-        </div>
-        <div class="col-md-6">
-          <select class="form-select" [(ngModel)]="filtreStatut"
-                  (ngModelChange)="filtreStatut.set($event)">
-            <option value="">Tous les statuts</option>
+  <!-- Loader -->
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div *ngIf="!loading()" class="table-responsive">
+    <table class="table table-hover">
+      <thead class="table-dark">
+      <tr>
+        <th>N° Commande</th>
+        <th>Client</th>
+        <th>Date</th>
+        <th>Montant</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let commande of commandesFiltered()">
+        <td>{{ commande.numeroCommande }}</td>
+        <td>
+          <div>{{ commande.clientNom }}</div>
+          <small class="text-muted">{{ commande.clientEmail }}</small>
+        </td>
+        <td>{{ commande.dateCommande | date:'short' }}</td>
+        <td>{{ commande.montantTotal }} DT</td>
+        <td>
+          <select class="form-select form-select-sm"
+                  [value]="commande.statut"
+                  (change)="updateStatut(commande.id, $any($event.target).value)"
+                  [ngClass]="{
+                      'bg-warning': commande.statut === 'EN_ATTENTE',
+                      'bg-info text-white': commande.statut === 'CONFIRMEE',
+                      'bg-primary text-white': commande.statut === 'EN_PREPARATION',
+                      'bg-secondary text-white': commande.statut === 'EXPEDIE',
+                      'bg-success text-white': commande.statut === 'LIVREE',
+                      'bg-danger text-white': commande.statut === 'ANNULEE'
+                    }">
             <option value="EN_ATTENTE">En attente</option>
             <option value="CONFIRMEE">Confirmée</option>
             <option value="EN_PREPARATION">En préparation</option>
@@ -26,150 +80,91 @@
             <option value="LIVREE">Livrée</option>
             <option value="ANNULEE">Annulée</option>
           </select>
-        </div>
-      </div>
-    </div>
-  </div>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-info"
+                  (click)="viewDetails(commande)"
+                  data-bs-toggle="modal"
+                  data-bs-target="#detailsModal">
+            <i class="bi bi-eye"></i> Détails
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
 
-  <!-- Tableau -->
-  <div class="card">
-    <div class="card-body">
-      <div *ngIf="loading()" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
-      </div>
-
-      <div *ngIf="!loading()" class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Client</th>
-            <th>Date</th>
-            <th>Montant</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let commande of commandesFiltered()">
-            <td>
-              <code>{{ commande.id.substring(0, 8) }}...</code>
-            </td>
-            <td>
-              <strong>{{ commande.clientNom }}</strong>
-            </td>
-            <td>{{ formatDate(commande.dateCommande) }}</td>
-            <td class="fw-bold">{{ commande.montantTotal }} DT</td>
-            <td>
-                <span class="badge" [class]="getStatutBadge(commande.statut)">
-                  {{ getStatutLabel(commande.statut) }}
-                </span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary"
-                      (click)="viewDetails(commande)">
-                👁️ Détails
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-
-        <div *ngIf="commandesFiltered().length === 0" class="text-center py-5 text-muted">
-          Aucune commande trouvée
-        </div>
-      </div>
+    <div *ngIf="commandesFiltered().length === 0" class="text-center py-4">
+      <p class="text-muted">Aucune commande trouvée</p>
     </div>
   </div>
 </div>
 
-<!-- Modal Détails -->
-<div class="modal" [class.show]="showDetailModal()" [style.display]="showDetailModal() ? 'block' : 'none'">
-  <div class="modal-dialog modal-xl">
+<!-- Modal détails -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content" *ngIf="selectedCommande()">
       <div class="modal-header">
-        <h5 class="modal-title">📦 Commande #{{ selectedCommande()!.id.substring(0, 8) }}</h5>
-        <button type="button" class="btn-close" (click)="closeDetailModal()"></button>
+        <h5 class="modal-title">
+          Commande {{ selectedCommande()!.numeroCommande }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col-md-6">
-            <h6>Informations client</h6>
-            <p class="mb-1"><strong>Nom:</strong> {{ selectedCommande()!.clientNom }}</p>
-            <p class="mb-1"><strong>ID Client:</strong>
-              <code>{{ selectedCommande()!.clientId }}</code>
+            <h6>Client</h6>
+            <p>
+              {{ selectedCommande()!.clientNom }}<br>
+              {{ selectedCommande()!.clientEmail }}<br>
+              {{ selectedCommande()!.clientTelephone }}
             </p>
-
-            <h6 class="mt-3">Adresse de livraison</h6>
-            <p class="mb-0">
-              {{ selectedCommande()!.adresseLivraison.rue }}<br>
+          </div>
+          <div class="col-md-6">
+            <h6>Adresse de livraison</h6>
+            <p *ngIf="selectedCommande()!.adresseLivraison">
+              {{ selectedCommande()!.adresseLivraison.adresse || selectedCommande()!.adresseLivraison.rue }}<br>
               {{ selectedCommande()!.adresseLivraison.ville }},
               {{ selectedCommande()!.adresseLivraison.codePostal }}<br>
               {{ selectedCommande()!.adresseLivraison.pays }}
             </p>
           </div>
-
-          <div class="col-md-6">
-            <h6>Informations commande</h6>
-            <p class="mb-1"><strong>Date:</strong> {{ formatDate(selectedCommande()!.dateCommande) }}</p>
-            <p class="mb-1"><strong>Statut:</strong>
-              <span class="badge" [class]="getStatutBadge(selectedCommande()!.statut)">
-                {{ getStatutLabel(selectedCommande()!.statut) }}
-              </span>
-            </p>
-            <p class="mb-1"><strong>Montant total:</strong>
-              <span class="text-primary fw-bold">{{ selectedCommande()!.montantTotal }} DT</span>
-            </p>
-          </div>
         </div>
 
-        <hr>
-
-        <h6>Produits commandés</h6>
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
-            <tr>
-              <th>Produit</th>
-              <th class="text-center">Quantité</th>
-              <th class="text-end">Prix unitaire</th>
-              <th class="text-end">Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let produit of selectedCommande()!.produits">
-              <td>{{ produit.titre }}</td>
-              <td class="text-center">{{ produit.quantite }}</td>
-              <td class="text-end">{{ produit.prix }} DT</td>
-              <td class="text-end fw-bold">{{ produit.prix * produit.quantite }} DT</td>
-            </tr>
-            </tbody>
-            <tfoot>
-            <tr>
-              <td colspan="3" class="text-end"><strong>Total:</strong></td>
-              <td class="text-end fw-bold text-primary">
-                {{ selectedCommande()!.montantTotal }} DT
-              </td>
-            </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <hr>
-
-        <h6>Changer le statut</h6>
-        <div class="btn-group" role="group">
-          <button *ngFor="let statut of getProchainStatuts(selectedCommande()!.statut)"
-                  class="btn btn-outline-primary"
-                  (click)="changerStatut(selectedCommande()!.id, statut)">
-            {{ getStatutLabel(statut) }}
-          </button>
-        </div>
+        <h6 class="mt-3">Articles</h6>
+        <table class="table table-sm">
+          <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix unitaire</th>
+            <th>Total</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of selectedCommande()!.items || selectedCommande()!.produits">
+            <td>{{ item.titre }}</td>
+            <td>{{ item.quantite }}</td>
+            <td>{{ item.prix }} DT</td>
+            <td>{{ item.quantite * item.prix }} DT</td>
+          </tr>
+          </tbody>
+          <tfoot>
+          <tr>
+            <th colspan="3">Total</th>
+            <th>{{ selectedCommande()!.montantTotal }} DT</th>
+          </tr>
+          </tfoot>
+        </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">Fermer</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
       </div>
     </div>
   </div>
 </div>
-<div class="modal-backdrop" *ngIf="showDetailModal()" (click)="closeDetailModal()"></div>
+
+<app-footer></app-footer>
+
+
+
+

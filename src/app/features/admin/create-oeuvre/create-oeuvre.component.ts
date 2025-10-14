@@ -1,248 +1,154 @@
-import { Component, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { OeuvreService, CategorieService } from '../../../core/services';
-import { Oeuvre, Categorie, StatutOeuvre } from '../../../core/models';
+import { Router, RouterModule } from '@angular/router';
+import { OeuvreService } from '../../../core/services/oeuvre.service';
+import { CategorieService } from '../../../core/services/categorie.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 
 @Component({
-  selector: 'app-gestion-oeuvres',
+  selector: 'app-create-oeuvre',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './gestion-produits.component.html',
-  styleUrls: ['./gestion-produits.component.scss']
+  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent, FooterComponent],
+  templateUrl: './create-oeuvre.component.html', // Corriger le nom du template
+  styleUrl: './create-oeuvre.component.scss'
 })
-export class GestionOeuvresComponent {
-  private oeuvreService = inject(OeuvreService);
-  private categorieService = inject(CategorieService);
-
-  oeuvres = signal<Oeuvre[]>([]);
-  categories = signal<Categorie[]>([]);
+export class GestionOeuvresComponent implements OnInit {
+  // État
   loading = signal(false);
+  error = signal<string | null>(null);
+  success = signal(false);
 
-  // Filtres
-  selectedCategorie = signal('');
-  selectedStatut = signal('');
-  searchTerm = signal('');
+  // Données
+  categories = signal<any[]>([]);
+  selectedFile: File | null = null;
+  imagePreview = signal<string | null>(null);
 
-  // Pagination
-  currentPage = signal(0);
-  totalPages = signal(0);
-  pageSize = 12;
+  // Modèle de l'œuvre
+  oeuvre = {
+    titre: '',
+    description: '',
+    prix: 0,
+    stockDisponible: 1,
+    categorieId: '',
+    techniques: '',
+    dimensions: {
+      largeur: 0,
+      hauteur: 0,
+      profondeur: 0
+    },
+    disponible: true
+  };
 
-  // Modal
-  showDetailModal = signal(false);
-  selectedOeuvre = signal<Oeuvre | null>(null);
+  constructor(
+    private oeuvreService: OeuvreService,
+    private categorieService: CategorieService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  statuts = [
-    { value: '', label: 'Tous les statuts' },
-    { value: StatutOeuvre.DISPONIBLE, label: 'Disponible' },
-    { value: StatutOeuvre.RUPTURE_STOCK, label: 'Rupture de stock' },
-    { value: StatutOeuvre.VENDU, label: 'Vendu' },
-    { value: StatutOeuvre.ARCHIVE, label: 'Archivé' },
-    { value: StatutOeuvre.EN_PROMOTION, label: 'En promotion' }
-  ];
-
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadCategories();
-    this.loadOeuvres();
   }
 
-  loadCategories(): void {
-    this.categorieService.getCategoriesActives().subscribe({
-      next: (data) => this.categories.set(data),
-      error: (err) => console.error('Erreur catégories:', err)
+  loadCategories() {
+    this.categorieService.getAllCategories().subscribe({
+      next: (data: any) => {
+        const categories = data.content || data;
+        this.categories.set(categories);
+      },
+      error: (err) => {
+        console.error('Erreur chargement catégories:', err);
+        this.error.set('Impossible de charger les catégories');
+      }
     });
   }
 
-  loadOeuvres(): void {
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Vérifier le type de fichier
+      if (!file.type.startsWith('image/')) {
+        this.error.set('Veuillez sélectionner une image valide');
+        return;
+      }
+
+      // Vérifier la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.error.set('L\'image ne doit pas dépasser 5MB');
+        return;
+      }
+
+      this.selectedFile = file;
+
+      // Créer un aperçu
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onSubmit() {
+    this.error.set(null);
     this.loading.set(true);
 
-    this.oeuvreService.getAllOeuvres(
-      this.selectedCategorie() || undefined,
-      undefined,
-      undefined,
-      undefined,
-      this.currentPage(),
-      this.pageSize
-    ).subscribe({
-      next: (response) => {
-        this.oeuvres.set(response.content);
-        this.totalPages.set(response.totalPages);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Erreur:', err);
-        alert('❌ Erreur lors du chargement des œuvres');
-        this.loading.set(false);
-      }
-    });
-  }
-
-  get filteredOeuvres(): Oeuvre[] {
-    let oeuvres = this.oeuvres();
-
-    // Filtrer par statut
-    if (this.selectedStatut()) {
-      oeuvres = oeuvres.filter(o => o.statut === this.selectedStatut());
-    }
-
-    // Filtrer par recherche
-    const search = this.searchTerm().toLowerCase();
-    if (search) {
-      oeuvres = oeuvres.filter(o =>
-        o.titre.toLowerCase().includes(search) ||
-        o.artisteNom.toLowerCase().includes(search) ||
-        o.description.toLowerCase().includes(search)
-      );
-    }
-
-    return oeuvres;
-  }
-
-  showOeuvreDetails(oeuvre: Oeuvre): void {
-    this.selectedOeuvre.set(oeuvre);
-    this.showDetailModal.set(true);
-  }
-
-  closeDetailModal(): void {
-    this.showDetailModal.set(false);
-    this.selectedOeuvre.set(null);
-  }
-
-  changeOeuvreStatut(oeuvre: Oeuvre, newStatut: StatutOeuvre): void {
-    if (!confirm(`Voulez-vous vraiment changer le statut de "${oeuvre.titre}" ?`)) {
+    // Validation
+    if (!this.oeuvre.titre || !this.oeuvre.prix || !this.oeuvre.categorieId) {
+      this.error.set('Veuillez remplir tous les champs obligatoires');
+      this.loading.set(false);
       return;
     }
 
-    const updatedOeuvre = {
-      titre: oeuvre.titre,
-      description: oeuvre.description,
-      categorie: oeuvre.categorie,
-      prix: oeuvre.prix,
-      quantiteDisponible: oeuvre.quantiteDisponible,
-      images: oeuvre.images,
-      statut: newStatut
-    };
+    // Préparer les données
+    const formData = new FormData();
 
-    this.oeuvreService.updateOeuvre(oeuvre.id, updatedOeuvre).subscribe({
-      next: () => {
-        alert('✅ Statut modifié avec succès');
-        this.loadOeuvres();
+    // Ajouter les données de l'œuvre
+    formData.append('oeuvre', new Blob([JSON.stringify(this.oeuvre)], {
+      type: 'application/json'
+    }));
+
+    // Ajouter l'image si sélectionnée
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile);
+    }
+
+    // Envoyer la requête
+    this.oeuvreService.creerOeuvre(formData).subscribe({
+      next: (response: any) => {
+        this.success.set(true);
+        this.loading.set(false);
+
+        // Rediriger après 2 secondes
+        setTimeout(() => {
+          const userRole = this.authService.currentUser()?.role;
+          if (userRole === 'ADMIN') {
+            this.router.navigate(['/admin/gestion-produits']);
+          } else if (userRole === 'ARTISTE') {
+            this.router.navigate(['/artiste/mes-oeuvres']);
+          }
+        }, 2000);
       },
-      error: (err) => {
-        console.error('Erreur:', err);
-        alert('❌ Erreur lors de la modification');
+      error: (err: any) => {
+        console.error('Erreur création œuvre:', err);
+        this.error.set(err.error?.message || 'Erreur lors de la création de l\'œuvre');
+        this.loading.set(false);
       }
     });
   }
 
-  deleteOeuvre(oeuvre: Oeuvre): void {
-    if (!confirm(`⚠️ ATTENTION : Voulez-vous vraiment supprimer l'œuvre "${oeuvre.titre}" ?`)) {
-      return;
+  cancel() {
+    const userRole = this.authService.currentUser()?.role;
+    if (userRole === 'ADMIN') {
+      this.router.navigate(['/admin/gestion-produits']);
+    } else if (userRole === 'ARTISTE') {
+      this.router.navigate(['/artiste/mes-oeuvres']);
+    } else {
+      this.router.navigate(['/']);
     }
-
-    this.oeuvreService.deleteOeuvre(oeuvre.id).subscribe({
-      next: () => {
-        alert('✅ Œuvre supprimée avec succès');
-        this.loadOeuvres();
-      },
-      error: (err) => {
-        console.error('Erreur:', err);
-        alert('❌ Erreur lors de la suppression');
-      }
-    });
-  }
-
-  goToPage(page: number): void {
-    if (page < 0 || page >= this.totalPages()) return;
-    this.currentPage.set(page);
-    this.loadOeuvres();
-  }
-
-  applyFilters(): void {
-    this.currentPage.set(0);
-    this.loadOeuvres();
-  }
-
-  resetFilters(): void {
-    this.selectedCategorie.set('');
-    this.selectedStatut.set('');
-    this.searchTerm.set('');
-    this.currentPage.set(0);
-    this.loadOeuvres();
-  }
-
-  getStatutBadgeClass(statut: StatutOeuvre): string {
-    const classes: { [key: string]: string } = {
-      [StatutOeuvre.DISPONIBLE]: 'bg-success',
-      [StatutOeuvre.RUPTURE_STOCK]: 'bg-warning',
-      [StatutOeuvre.VENDU]: 'bg-danger',
-      [StatutOeuvre.ARCHIVE]: 'bg-secondary',
-      [StatutOeuvre.EN_PROMOTION]: 'bg-info'
-    };
-    return classes[statut] || 'bg-secondary';
-  }
-
-  getStatutLabel(statut: StatutOeuvre): string {
-    const labels: { [key: string]: string } = {
-      [StatutOeuvre.DISPONIBLE]: 'Disponible',
-      [StatutOeuvre.RUPTURE_STOCK]: 'Rupture stock',
-      [StatutOeuvre.VENDU]: 'Vendu',
-      [StatutOeuvre.ARCHIVE]: 'Archivé',
-      [StatutOeuvre.EN_PROMOTION]: 'En promotion'
-    };
-    return labels[statut] || statut;
-  }
-
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const total = this.totalPages();
-    const current = this.currentPage();
-
-    let start = Math.max(0, current - 2);
-    let end = Math.min(total - 1, start + 4);
-
-    if (end - start < 4) {
-      start = Math.max(0, end - 4);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  }
-
-  getMainImage(oeuvre: Oeuvre): string {
-    return oeuvre.images && oeuvre.images.length > 0
-      ? oeuvre.images[0]
-      : 'https://placehold.co/200x200/667eea/ffffff?text=Sans+Image';
-  }
-
-  exportOeuvres(): void {
-    const oeuvres = this.filteredOeuvres;
-    const headers = ['Titre', 'Artiste', 'Catégorie', 'Prix', 'Stock', 'Statut', 'Note moyenne'];
-
-    const csvContent = [
-      headers.join(','),
-      ...oeuvres.map(o => [
-        o.titre,
-        o.artisteNom,
-        o.categorie,
-        o.prix,
-        o.quantiteDisponible,
-        this.getStatutLabel(o.statut),
-        o.notemoyenne || 0
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `oeuvres_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
   }
 }
 

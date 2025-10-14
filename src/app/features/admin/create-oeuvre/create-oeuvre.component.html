@@ -1,312 +1,225 @@
-<div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-image me-2"></i>Gestion des Œuvres</h2>
-    <button class="btn btn-success" (click)="exportOeuvres()">
-      <i class="bi bi-download me-2"></i>Exporter CSV
-    </button>
-  </div>
+﻿<app-navbar></app-navbar>
 
-  <!-- Filtres -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Rechercher</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="searchTerm.set($event)"
-            placeholder="Titre, artiste..."
-          >
+<div class="container mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="bi bi-palette"></i> Créer une nouvelle œuvre
+          </h3>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Catégorie</label>
-          <select
-            class="form-select"
-            [(ngModel)]="selectedCategorie"
-            (ngModelChange)="selectedCategorie.set($event)"
-          >
-            <option value="">Toutes les catégories</option>
-            @for (cat of categories(); track cat.id) {
-              <option [value]="cat.nom">{{ cat.nom }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Statut</label>
-          <select
-            class="form-select"
-            [(ngModel)]="selectedStatut"
-            (ngModelChange)="selectedStatut.set($event)"
-          >
-            @for (statut of statuts; track statut.value) {
-              <option [value]="statut.value">{{ statut.label }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end gap-2">
-          <button class="btn btn-primary flex-fill" (click)="applyFilters()">
-            <i class="bi bi-search me-2"></i>Filtrer
-          </button>
-          <button class="btn btn-outline-secondary" (click)="resetFilters()">
-            <i class="bi bi-arrow-clockwise"></i>
-          </button>
+        <div class="card-body">
+          <!-- Messages -->
+          <div *ngIf="error()" class="alert alert-danger alert-dismissible fade show">
+            {{ error() }}
+            <button type="button" class="btn-close" (click)="error.set(null)"></button>
+          </div>
+
+          <div *ngIf="success()" class="alert alert-success">
+            <i class="bi bi-check-circle"></i> Œuvre créée avec succès ! Redirection...
+          </div>
+
+          <!-- Formulaire -->
+          <form (ngSubmit)="onSubmit()" #oeuvreForm="ngForm">
+            <!-- Titre -->
+            <div class="mb-3">
+              <label for="titre" class="form-label">
+                Titre de l'œuvre <span class="text-danger">*</span>
+              </label>
+              <input type="text"
+                     class="form-control"
+                     id="titre"
+                     [(ngModel)]="oeuvre.titre"
+                     name="titre"
+                     required
+                     placeholder="Ex: Coucher de soleil sur la Médina">
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="description" class="form-label">
+                Description <span class="text-danger">*</span>
+              </label>
+              <textarea class="form-control"
+                        id="description"
+                        rows="4"
+                        [(ngModel)]="oeuvre.description"
+                        name="description"
+                        required
+                        placeholder="Décrivez votre œuvre, son inspiration, sa signification...">
+              </textarea>
+            </div>
+
+            <!-- Prix, Stock et Catégorie -->
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="prix" class="form-label">
+                    Prix (DT) <span class="text-danger">*</span>
+                  </label>
+                  <input type="number"
+                         class="form-control"
+                         id="prix"
+                         [(ngModel)]="oeuvre.prix"
+                         name="prix"
+                         required
+                         min="0"
+                         step="0.01">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="stock" class="form-label">
+                    Stock disponible <span class="text-danger">*</span>
+                  </label>
+                  <input type="number"
+                         class="form-control"
+                         id="stock"
+                         [(ngModel)]="oeuvre.stockDisponible"
+                         name="stock"
+                         required
+                         min="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="categorie" class="form-label">
+                    Catégorie <span class="text-danger">*</span>
+                  </label>
+                  <select class="form-select"
+                          id="categorie"
+                          [(ngModel)]="oeuvre.categorieId"
+                          name="categorie"
+                          required>
+                    <option value="">-- Sélectionner --</option>
+                    <option *ngFor="let cat of categories()" [value]="cat.id">
+                      {{ cat.nom }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image -->
+            <div class="mb-3">
+              <label for="image" class="form-label">
+                Image de l'œuvre
+              </label>
+              <input type="file"
+                     class="form-control"
+                     id="image"
+                     (change)="onFileSelected($event)"
+                     accept="image/*">
+              <small class="text-muted">
+                Formats acceptés: JPG, PNG, GIF (max 5MB)
+              </small>
+
+              <!-- Aperçu de l'image -->
+              <div *ngIf="imagePreview()" class="mt-3">
+                <img [src]="imagePreview()"
+                     alt="Aperçu"
+                     class="img-thumbnail"
+                     style="max-height: 200px;">
+              </div>
+            </div>
+
+            <!-- Techniques -->
+            <div class="mb-3">
+              <label for="techniques" class="form-label">
+                Techniques utilisées
+              </label>
+              <input type="text"
+                     class="form-control"
+                     id="techniques"
+                     [(ngModel)]="oeuvre.techniques"
+                     name="techniques"
+                     placeholder="Ex: Huile sur toile, Aquarelle, Photographie numérique...">
+            </div>
+
+            <!-- Dimensions -->
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="largeur" class="form-label">
+                    Largeur (cm)
+                  </label>
+                  <input type="number"
+                         class="form-control"
+                         id="largeur"
+                         [(ngModel)]="oeuvre.dimensions.largeur"
+                         name="largeur"
+                         min="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="hauteur" class="form-label">
+                    Hauteur (cm)
+                  </label>
+                  <input type="number"
+                         class="form-control"
+                         id="hauteur"
+                         [(ngModel)]="oeuvre.dimensions.hauteur"
+                         name="hauteur"
+                         min="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="profondeur" class="form-label">
+                    Profondeur (cm)
+                  </label>
+                  <input type="number"
+                         class="form-control"
+                         id="profondeur"
+                         [(ngModel)]="oeuvre.dimensions.profondeur"
+                         name="profondeur"
+                         min="0">
+                </div>
+              </div>
+            </div>
+
+            <!-- Disponibilité -->
+            <div class="form-check mb-3">
+              <input type="checkbox"
+                     class="form-check-input"
+                     id="disponible"
+                     [(ngModel)]="oeuvre.disponible"
+                     name="disponible">
+              <label class="form-check-label" for="disponible">
+                Œuvre disponible à la vente
+              </label>
+            </div>
+
+            <!-- Boutons -->
+            <div class="d-flex justify-content-between">
+              <button type="button"
+                      class="btn btn-secondary"
+                      (click)="cancel()">
+                <i class="bi bi-x-circle"></i> Annuler
+              </button>
+              <button type="submit"
+                      class="btn btn-primary"
+                      [disabled]="loading() || !oeuvreForm.form.valid">
+                <span *ngIf="!loading()">
+                  <i class="bi bi-check-circle"></i> Créer l'œuvre
+                </span>
+                <span *ngIf="loading()">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Création...
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Liste des œuvres -->
-  @if (loading()) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Chargement...</span>
-      </div>
-    </div>
-  } @else {
-    <div class="row g-4">
-      @for (oeuvre of filteredOeuvres; track oeuvre.id) {
-        <div class="col-md-6 col-lg-4 col-xl-3">
-          <div class="card h-100">
-            <div class="position-relative">
-              <img
-                [src]="getMainImage(oeuvre)"
-                [alt]="oeuvre.titre"
-                class="card-img-top"
-                style="height: 200px; object-fit: cover;"
-              >
-              <span
-                [class]="'position-absolute top-0 end-0 m-2 badge ' + getStatutBadgeClass(oeuvre.statut)"
-              >
-                {{ getStatutLabel(oeuvre.statut) }}
-              </span>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title text-truncate" [title]="oeuvre.titre">
-                {{ oeuvre.titre }}
-              </h5>
-              <p class="card-text">
-                <small class="text-muted">Par {{ oeuvre.artisteNom }}</small><br>
-                <span class="badge bg-light text-dark">{{ oeuvre.categorie }}</span>
-              </p>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <strong class="text-primary">{{ oeuvre.prix }} DT</strong>
-                <small>Stock: {{ oeuvre.quantiteDisponible }}</small>
-              </div>
-              @if (oeuvre.notemoyenne) {
-                <div class="mb-2">
-                  <small class="text-warning">
-                    ⭐ {{ oeuvre.notemoyenne.toFixed(1) }}
-                    ({{ oeuvre.avis?.length || 0 }} avis)
-                  </small>
-                </div>
-              }
-              <div class="d-grid gap-2">
-                <button
-                  class="btn btn-sm btn-outline-primary"
-                  (click)="showOeuvreDetails(oeuvre)"
-                >
-                  <i class="bi bi-eye me-1"></i>Voir détails
-                </button>
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-sm btn-outline-warning"
-                    (click)="changeOeuvreStatut(oeuvre, 'ARCHIVE')"
-                    title="Archiver"
-                  >
-                    <i class="bi bi-archive"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    (click)="deleteOeuvre(oeuvre)"
-                    title="Supprimer"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      } @empty {
-        <div class="col-12">
-          <div class="alert alert-info text-center">
-            <i class="bi bi-info-circle me-2"></i>
-            Aucune œuvre ne correspond à vos critères
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Pagination -->
-    @if (totalPages() > 1) {
-      <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="currentPage() === 0">
-            <a class="page-link" (click)="goToPage(currentPage() - 1)" style="cursor: pointer;">
-              <i class="bi bi-chevron-left"></i>
-            </a>
-          </li>
-
-          @for (page of getPageNumbers(); track page) {
-            <li class="page-item" [class.active]="currentPage() === page">
-              <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">
-                {{ page + 1 }}
-              </a>
-            </li>
-          }
-
-          <li class="page-item" [class.disabled]="currentPage() === totalPages() - 1">
-            <a class="page-link" (click)="goToPage(currentPage() + 1)" style="cursor: pointer;">
-              <i class="bi bi-chevron-right"></i>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    }
-  }
 </div>
 
-<!-- Modal Détails Œuvre -->
-@if (showDetailModal() && selectedOeuvre()) {
-  <div class="modal show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="bi bi-image me-2"></i>
-            Détails de l'œuvre
-          </h5>
-          <button type="button" class="btn-close" (click)="closeDetailModal()"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-5">
-              @if (selectedOeuvre()!.images && selectedOeuvre()!.images.length > 0) {
-                <div id="carouselImages" class="carousel slide">
-                  <div class="carousel-inner">
-                    @for (image of selectedOeuvre()!.images; track $index) {
-                      <div class="carousel-item" [class.active]="$index === 0">
-                        <img [src]="image" class="d-block w-100" [alt]="selectedOeuvre()!.titre">
-                      </div>
-                    }
-                  </div>
-                  @if (selectedOeuvre()!.images.length > 1) {
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
-                      <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
-                      <span class="carousel-control-next-icon"></span>
-                    </button>
-                  }
-                </div>
-              } @else {
-                <img
-                  src="https://placehold.co/400x400/667eea/ffffff?text=Sans+Image"
-                  class="img-fluid"
-                  [alt]="selectedOeuvre()!.titre"
-                >
-              }
-            </div>
-            <div class="col-md-7">
-              <h3>{{ selectedOeuvre()!.titre }}</h3>
-              <p class="text-muted">Par <strong>{{ selectedOeuvre()!.artisteNom }}</strong></p>
+<app-footer></app-footer>
 
-              <table class="table table-sm">
-                <tr>
-                  <th width="40%">Catégorie:</th>
-                  <td>{{ selectedOeuvre()!.categorie }}</td>
-                </tr>
-                <tr>
-                  <th>Prix:</th>
-                  <td class="text-primary"><strong>{{ selectedOeuvre()!.prix }} DT</strong></td>
-                </tr>
-                <tr>
-                  <th>Stock disponible:</th>
-                  <td>{{ selectedOeuvre()!.quantiteDisponible }}</td>
-                </tr>
-                <tr>
-                  <th>Statut actuel:</th>
-                  <td>
-                    <span [class]="'badge ' + getStatutBadgeClass(selectedOeuvre()!.statut)">
-                      {{ getStatutLabel(selectedOeuvre()!.statut) }}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <th>Note moyenne:</th>
-                  <td>
-                    @if (selectedOeuvre()!.notemoyenne) {
-                      <span class="text-warning">
-                        ⭐ {{ selectedOeuvre()!.notemoyenne.toFixed(1) }}/5
-                      </span>
-                      <small class="text-muted ms-2">
-                        ({{ selectedOeuvre()!.avis?.length || 0 }} avis)
-                      </small>
-                    } @else {
-                      <span class="text-muted">Pas encore noté</span>
-                    }
-                  </td>
-                </tr>
-                <tr>
-                  <th>Date de création:</th>
-                  <td>{{ selectedOeuvre()!.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
-                </tr>
-              </table>
 
-              <div class="mb-3">
-                <h5>Description</h5>
-                <p>{{ selectedOeuvre()!.description }}</p>
-              </div>
 
-              <div class="mb-3">
-                <label class="form-label">Changer le statut</label>
-                <select
-                  class="form-select"
-                  [value]="selectedOeuvre()!.statut"
-                  (change)="changeOeuvreStatut(selectedOeuvre()!, $any($event.target).value)"
-                >
-                  @for (statut of statuts; track statut.value) {
-                    @if (statut.value) {
-                      <option [value]="statut.value">{{ statut.label }}</option>
-                    }
-                  }
-                </select>
-              </div>
 
-              @if (selectedOeuvre()!.avis && selectedOeuvre()!.avis.length > 0) {
-                <div class="mt-3">
-                  <h5>Derniers avis</h5>
-                  <div style="max-height: 200px; overflow-y: auto;">
-                    @for (avis of selectedOeuvre()!.avis.slice(0, 5); track avis.clientId) {
-                      <div class="border-bottom pb-2 mb-2">
-                        <div class="d-flex justify-content-between">
-                          <strong>{{ avis.clientNom }}</strong>
-                          <small class="text-muted">{{ avis.dateAvis | date:'dd/MM/yyyy' }}</small>
-                        </div>
-                        <div class="text-warning">
-                          @for (i of [1,2,3,4,5]; track i) {
-                            {{ i <= avis.note ? '★' : '☆' }}
-                          }
-                        </div>
-                        <p class="mb-0 small">{{ avis.commentaire }}</p>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-danger"
-            (click)="deleteOeuvre(selectedOeuvre()!)"
-          >
-            <i class="bi bi-trash me-2"></i>Supprimer l'œuvre
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
-            Fermer
-          </button>

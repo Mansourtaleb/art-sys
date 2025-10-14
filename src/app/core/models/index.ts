@@ -2,6 +2,7 @@
 export * from './auth.model';
 
 // Entity models
+export * from './adresse-livraison.model';
 export * from './utilisateur.model';
 export * from './oeuvre.model';
 export * from './commande.model';
