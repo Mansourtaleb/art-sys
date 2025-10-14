@@ -1,1 +1,351 @@
-<p>utilisateurs works!</p>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people me-2"></i>Gestion des Utilisateurs</h2>
+    <button class="btn btn-success" (click)="exportUsers()">
+      <i class="bi bi-download me-2"></i>Exporter CSV
+    </button>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Rechercher</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="searchTerm.set($event)"
+            placeholder="Nom, email ou téléphone..."
+          >
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Filtrer par rôle</label>
+          <select
+            class="form-select"
+            [(ngModel)]="selectedRole"
+            (ngModelChange)="selectedRole.set($event)"
+          >
+            @for (role of roles; track role.value) {
+              <option [value]="role.value">{{ role.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-primary w-100" (click)="loadUtilisateurs()">
+            <i class="bi bi-search me-2"></i>Rechercher
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-primary">{{ utilisateurs().length }}</h3>
+          <p class="text-muted mb-0">Total utilisateurs</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-success">
+            {{ utilisateurs().filter(u => u.role === 'CLIENT').length }}
+          </h3>
+          <p class="text-muted mb-0">Clients</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-info">
+            {{ utilisateurs().filter(u => u.role === 'ARTISTE').length }}
+          </h3>
+          <p class="text-muted mb-0">Artistes</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="text-danger">
+            {{ utilisateurs().filter(u => u.role === 'ADMIN').length }}
+          </h3>
+          <p class="text-muted mb-0">Administrateurs</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des utilisateurs -->
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+    </div>
+  } @else {
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Téléphone</th>
+              <th>Date inscription</th>
+              <th>Statut</th>
+              <th width="200">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUtilisateurs; track user.id) {
+                <tr>
+                  <td>
+                    @if (user.photoProfile) {
+                      <img
+                        [src]="user.photoProfile"
+                        [alt]="user.nom"
+                        class="rounded-circle"
+                        style="width: 40px; height: 40px; object-fit: cover;"
+                      >
+                    } @else {
+                      <div
+                        class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px; font-weight: bold;"
+                      >
+                        {{ user.nom.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                  </td>
+                  <td>
+                    <strong>{{ user.nom }}</strong>
+                  </td>
+                  <td>
+                    {{ user.email }}
+                    @if (user.emailVerifie) {
+                      <i class="bi bi-check-circle-fill text-success ms-1" title="Email vérifié"></i>
+                    }
+                  </td>
+                  <td>
+                    <span [class]="'badge ' + getRoleBadgeClass(user.role)">
+                      {{ user.role }}
+                    </span>
+                  </td>
+                  <td>{{ user.telephone || '-' }}</td>
+                  <td>
+                    <small>{{ user.dateInscription | date:'dd/MM/yyyy' }}</small>
+                  </td>
+                  <td>
+                    <span [class]="'badge ' + getStatusBadgeClass(user.emailVerifie)">
+                      {{ user.emailVerifie ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      class="btn btn-sm btn-outline-info me-1"
+                      (click)="showUserDetails(user)"
+                      title="Voir détails"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-warning me-1"
+                      (click)="toggleUserStatus(user)"
+                      [title]="user.emailVerifie ? 'Désactiver' : 'Activer'"
+                    >
+                      <i [class]="'bi bi-' + (user.emailVerifie ? 'lock' : 'unlock')"></i>
+                    </button>
+                    @if (user.role !== 'ADMIN') {
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUser(user)"
+                        title="Supprimer"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="text-center text-muted py-4">
+                    Aucun utilisateur trouvé
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [class.disabled]="currentPage() === 0">
+                <a class="page-link" (click)="goToPage(currentPage() - 1)" style="cursor: pointer;">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+
+              @for (page of getPageNumbers(); track page) {
+                <li class="page-item" [class.active]="currentPage() === page">
+                  <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">
+                    {{ page + 1 }}
+                  </a>
+                </li>
+              }
+
+              <li class="page-item" [class.disabled]="currentPage() === totalPages() - 1">
+                <a class="page-link" (click)="goToPage(currentPage() + 1)" style="cursor: pointer;">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal Détails Utilisateur -->
+@if (showDetailModal() && selectedUser()) {
+  <div class="modal show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-person-circle me-2"></i>
+            Détails de l'utilisateur
+          </h5>
+          <button type="button" class="btn-close" (click)="closeDetailModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-4 text-center">
+              @if (selectedUser()!.photoProfile) {
+                <img
+                  [src]="selectedUser()!.photoProfile"
+                  [alt]="selectedUser()!.nom"
+                  class="rounded-circle mb-3"
+                  style="width: 150px; height: 150px; object-fit: cover;"
+                >
+              } @else {
+                <div
+                  class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                  style="width: 150px; height: 150px; font-size: 3rem;"
+                >
+                  {{ selectedUser()!.nom.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <h4>{{ selectedUser()!.nom }}</h4>
+              <span [class]="'badge ' + getRoleBadgeClass(selectedUser()!.role)">
+                {{ selectedUser()!.role }}
+              </span>
+            </div>
+            <div class="col-md-8">
+              <table class="table table-borderless">
+                <tr>
+                  <th width="30%">Email:</th>
+                  <td>
+                    {{ selectedUser()!.email }}
+                    @if (selectedUser()!.emailVerifie) {
+                      <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                    }
+                  </td>
+                </tr>
+                <tr>
+                  <th>Téléphone:</th>
+                  <td>{{ selectedUser()!.telephone || 'Non renseigné' }}</td>
+                </tr>
+                <tr>
+                  <th>Date de naissance:</th>
+                  <td>{{ selectedUser()!.dateNaissance ? (selectedUser()!.dateNaissance | date:'dd/MM/yyyy') : 'Non renseignée' }}</td>
+                </tr>
+                <tr>
+                  <th>Genre:</th>
+                  <td>{{ selectedUser()!.genre || 'Non spécifié' }}</td>
+                </tr>
+                <tr>
+                  <th>Date d'inscription:</th>
+                  <td>{{ selectedUser()!.dateInscription | date:'dd/MM/yyyy HH:mm' }}</td>
+                </tr>
+                <tr>
+                  <th>Statut:</th>
+                  <td>
+                    <span [class]="'badge ' + getStatusBadgeClass(selectedUser()!.emailVerifie)">
+                      {{ selectedUser()!.emailVerifie ? 'Compte actif' : 'Compte inactif' }}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              @if (selectedUser()!.adresses && selectedUser()!.adresses!.length > 0) {
+                <h5 class="mt-4">Adresses de livraison</h5>
+                <div class="accordion" id="addressAccordion">
+                  @for (adresse of selectedUser()!.adresses; track $index) {
+                    <div class="accordion-item">
+                      <h2 class="accordion-header">
+                        <button
+                          class="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          [attr.data-bs-target]="'#address' + $index"
+                        >
+                          {{ adresse.nom }}
+                          @if (adresse.parDefaut) {
+                            <span class="badge bg-primary ms-2">Par défaut</span>
+                          }
+                        </button>
+                      </h2>
+                      <div [id]="'address' + $index" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                          <p class="mb-1">{{ adresse.adresse }}</p>
+                          <p class="mb-1">{{ adresse.codePostal }} {{ adresse.ville }}</p>
+                          <p class="mb-1">{{ adresse.pays }}</p>
+                          <p class="mb-0"><i class="bi bi-telephone"></i> {{ adresse.telephone }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="mt-4">
+                <label class="form-label">Changer le rôle</label>
+                <select
+                  class="form-select"
+                  [value]="selectedUser()!.role"
+                  (change)="changeUserRole(selectedUser()!, $any($event.target).value)"
+                >
+                  <option value="CLIENT">Client</option>
+                  <option value="ARTISTE">Artiste</option>
+                  <option value="ADMIN">Administrateur</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+
+
+

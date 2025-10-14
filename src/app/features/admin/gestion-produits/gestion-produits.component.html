@@ -1,0 +1,191 @@
+<app-navbar />
+
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2>🎨 Gestion des produits</h2>
+    </div>
+    <div class="col-md-6 text-end">
+      <button class="btn btn-primary" (click)="openModal()">
+        ➕ Nouveau produit
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="🔍 Rechercher..."
+                 [(ngModel)]="searchTerm" (ngModelChange)="searchTerm.set($event)">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="filtreCategorie"
+                  (ngModelChange)="filtreCategorie.set($event)">
+            <option value="">Toutes les catégories</option>
+            <option *ngFor="let cat of categories()" [value]="cat.nom">
+              {{ cat.nom }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="filtreStatut"
+                  (ngModelChange)="filtreStatut.set($event)">
+            <option value="">Tous les statuts</option>
+            <option value="DISPONIBLE">Disponible</option>
+            <option value="RUPTURE_STOCK">Rupture de stock</option>
+            <option value="EN_PROMOTION">En promotion</option>
+            <option value="ARCHIVE">Archivé</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading()" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+
+      <div *ngIf="!loading()" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th>Image</th>
+            <th>Titre</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let oeuvre of oeuvresFiltered()">
+            <td>
+              <img [src]="getImageUrl(oeuvre.images)"
+                   class="product-thumbnail" alt="{{ oeuvre.titre }}">
+            </td>
+            <td>
+              <strong>{{ oeuvre.titre }}</strong><br>
+              <small class="text-muted">par {{ oeuvre.artisteNom }}</small>
+            </td>
+            <td>{{ oeuvre.categorie }}</td>
+            <td class="fw-bold">{{ oeuvre.prix }} DT</td>
+            <td>
+                <span [class]="oeuvre.quantiteDisponible < 10 ? 'text-danger' : 'text-success'">
+                  {{ oeuvre.quantiteDisponible }}
+                </span>
+            </td>
+            <td>
+                <span class="badge" [class]="getStatutBadge(oeuvre.statut)">
+                  {{ oeuvre.statut }}
+                </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1"
+                      (click)="openModal(oeuvre)">
+                ✏️
+              </button>
+              <button class="btn btn-sm btn-outline-danger"
+                      (click)="deleteOeuvre(oeuvre.id)">
+                🗑️
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="oeuvresFiltered().length === 0" class="text-center py-5 text-muted">
+          Aucun produit trouvé
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.show]="showModal()" [style.display]="showModal() ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ editMode() ? '✏️ Modifier le produit' : '➕ Nouveau produit' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Titre *</label>
+          <input type="text" class="form-control" [(ngModel)]="currentOeuvre().titre" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="currentOeuvre().description"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Catégorie *</label>
+            <select class="form-select" [(ngModel)]="currentOeuvre().categorie" required>
+              <option value="">-- Sélectionner --</option>
+              <option *ngFor="let cat of categories()" [value]="cat.nom">
+                {{ cat.nom }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Prix (DT) *</label>
+            <input type="number" class="form-control" [(ngModel)]="currentOeuvre().prix"
+                   min="0" step="0.5" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Stock disponible</label>
+            <input type="number" class="form-control" [(ngModel)]="currentOeuvre().quantiteDisponible"
+                   min="0" required>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Statut</label>
+            <select class="form-select" [(ngModel)]="currentOeuvre().statut">
+              <option [value]="StatutOeuvre.DISPONIBLE">Disponible</option>
+              <option [value]="StatutOeuvre.RUPTURE_STOCK">Rupture de stock</option>
+              <option [value]="StatutOeuvre.EN_PROMOTION">En promotion</option>
+              <option [value]="StatutOeuvre.ARCHIVE">Archivé</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">URLs des images</label>
+          <div *ngFor="let img of currentOeuvre().images; let i = index" class="input-group mb-2">
+            <input type="url" class="form-control" [(ngModel)]="currentOeuvre().images[i]"
+                   placeholder="https://...">
+            <button class="btn btn-outline-danger" type="button"
+                    (click)="removeImageField(i)" *ngIf="currentOeuvre().images.length > 1">
+              ❌
+            </button>
+          </div>
+          <button class="btn btn-sm btn-outline-primary" (click)="addImageField()">
+            ➕ Ajouter une image
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+        <button type="button" class="btn btn-primary" (click)="saveOeuvre()">
+          {{ editMode() ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" *ngIf="showModal()" (click)="closeModal()"></div>

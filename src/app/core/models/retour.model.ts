@@ -5,19 +5,19 @@ export interface Retour {
   commandeId: string;
   clientId: string;
   clientNom: string;
+  clientEmail: string;
   motif: string;
-  description?: string;
-  photosUrls: string[];
+  description: string;
   statut: StatutRetour;
-  dateCreation: Date;
-  dateModification: Date;
-  dateTraitement?: Date;
   commentaireAdmin?: string;
+  dateDemande: Date;
+  dateTraitement?: Date;
+  produitsConcernes: string;
 }
 
 export interface RetourRequest {
   commandeId: string;
   motif: string;
-  description?: string;
-  photosUrls?: string[];
+  description: string;
+  produitsConcernes: string;
 }

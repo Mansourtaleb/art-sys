@@ -1,0 +1,224 @@
+<app-navbar />
+
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>📊 Tableau de bord</h2>
+      <p class="text-muted">Vue d'ensemble de votre activité Print&Digital</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 text-muted">Chargement des statistiques...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error()" class="alert alert-danger" role="alert">
+    {{ error() }}
+  </div>
+
+  <!-- Statistiques -->
+  <div *ngIf="stats() && !loading()">
+    <!-- Cards KPIs -->
+    <div class="row mb-4">
+      <!-- CA du jour -->
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card bg-gradient-pink">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="card-subtitle mb-2">CA Aujourd'hui</p>
+                <h3 class="card-title mb-0">{{ stats()!.chiffreAffairesJour }} DT</h3>
+              </div>
+              <div class="stat-icon">💰</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commandes du mois -->
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card bg-gradient-purple">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="card-subtitle mb-2">Commandes ce mois</p>
+                <h3 class="card-title mb-0">{{ stats()!.nombreCommandesMois }}</h3>
+              </div>
+              <div class="stat-icon">📦</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card bg-gradient-teal">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="card-subtitle mb-2">Clients</p>
+                <h3 class="card-title mb-0">{{ stats()!.nombreClients }}</h3>
+                <small class="text-success">+{{ stats()!.nombreNouveauxClientsMois }} ce mois</small>
+              </div>
+              <div class="stat-icon">👥</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock faible -->
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card bg-gradient-orange">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="card-subtitle mb-2">Alertes stock</p>
+                <h3 class="card-title mb-0">{{ stats()!.nombreProduitsStockFaible }}</h3>
+                <small class="text-warning">Produits < 10</small>
+              </div>
+              <div class="stat-icon">⚠️</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+      <!-- Évolution CA -->
+      <div class="col-lg-8 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">📈 Évolution du chiffre d'affaires (7 derniers jours)</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="chartCA" width="800" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commandes par statut -->
+      <div class="col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">📋 Commandes par statut</h5>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let item of stats()!.commandesParStatut | keyvalue" class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge" [class]="getStatutBadgeClass(item.key)">
+                  {{ getStatutLabel(item.key) }}
+                </span>
+                <strong>{{ item.value }}</strong>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar"
+                     [class]="getStatutBadgeClass(item.key)"
+                     [style.width.%]="(item.value / stats()!.nombreCommandesTotal) * 100">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenus par catégorie -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">💵 Revenus par catégorie</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="chartCategories" width="1200" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top produits -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">🏆 Top 10 produits les plus vendus</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Produit</th>
+                  <th class="text-center">Quantité vendue</th>
+                  <th class="text-end">Montant total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let produit of stats()!.topProduits; let i = index">
+                  <td>
+                      <span class="badge"
+                            [class]="i < 3 ? 'bg-warning' : 'bg-secondary'">
+                        {{ i + 1 }}
+                      </span>
+                  </td>
+                  <td>{{ produit.produitTitre }}</td>
+                  <td class="text-center">{{ produit.quantiteVendue }}</td>
+                  <td class="text-end fw-bold">{{ produit.montantTotal }} DT</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <a routerLink="/admin/produits" class="card quick-action-card text-decoration-none">
+          <div class="card-body text-center">
+            <div class="quick-action-icon">🎨</div>
+            <h6>Gérer les produits</h6>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <a routerLink="/admin/commandes" class="card quick-action-card text-decoration-none">
+          <div class="card-body text-center">
+            <div class="quick-action-icon">📦</div>
+            <h6>Voir les commandes</h6>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <a routerLink="/admin/utilisateurs" class="card quick-action-card text-decoration-none">
+          <div class="card-body text-center">
+            <div class="quick-action-icon">👥</div>
+            <h6>Gérer les utilisateurs</h6>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <a routerLink="/admin/bannieres" class="card quick-action-card text-decoration-none">
+          <div class="card-body text-center">
+            <div class="quick-action-icon">🖼️</div>
+            <h6>Gérer les bannières</h6>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer />

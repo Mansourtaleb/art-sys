@@ -1,0 +1,192 @@
+<app-navbar />
+
+<div class="container my-5">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Finaliser ma commande</h2>
+
+      <!-- Stepper -->
+      <div class="checkout-stepper mb-5">
+        <div class="step" [class.active]="etapeActuelle() >= 1" [class.completed]="etapeActuelle() > 1">
+          <div class="step-number">1</div>
+          <div class="step-label">Panier</div>
+        </div>
+        <div class="step-line" [class.active]="etapeActuelle() > 1"></div>
+        <div class="step" [class.active]="etapeActuelle() >= 2" [class.completed]="etapeActuelle() > 2">
+          <div class="step-number">2</div>
+          <div class="step-label">Livraison</div>
+        </div>
+        <div class="step-line" [class.active]="etapeActuelle() > 2"></div>
+        <div class="step" [class.active]="etapeActuelle() >= 3">
+          <div class="step-number">3</div>
+          <div class="step-label">Confirmation</div>
+        </div>
+      </div>
+
+      <!-- Alertes -->
+      <div *ngIf="error()" class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error() }}
+        <button type="button" class="btn-close" (click)="error.set(null)"></button>
+      </div>
+
+      <div *ngIf="success()" class="alert alert-success" role="alert">
+        ✅ Commande créée avec succès ! Redirection...
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <!-- ÉTAPE 1 : Récapitulatif panier -->
+      <div *ngIf="etapeActuelle() === 1" class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">📦 Récapitulatif de votre panier</h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let item of items()" class="cart-item d-flex align-items-center mb-3 pb-3 border-bottom">
+            <img [src]="getImageUrl(item)" class="cart-item-img me-3" alt="{{ item.titre }}">
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{ item.titre }}</h6>
+              <small class="text-muted">par {{ item.artiste }}</small>
+            </div>
+            <div class="text-end">
+              <p class="mb-0">Qté: {{ item.quantity }}</p>
+              <p class="mb-0 fw-bold">{{ item.prix * item.quantity }} DT</p>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100" (click)="allerEtape(2)">
+            Continuer vers la livraison →
+          </button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 2 : Adresse de livraison -->
+      <div *ngIf="etapeActuelle() === 2" class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">📍 Adresse de livraison</h5>
+        </div>
+        <div class="card-body">
+          <!-- Adresses existantes -->
+          <div *ngIf="!modeNouvelleAdresse() && adresses().length > 0">
+            <div *ngFor="let adresse of adresses()"
+                 class="address-card p-3 mb-3 border rounded cursor-pointer"
+                 [class.selected]="adresseSelectionnee() === adresse"
+                 (click)="selectionnerAdresse(adresse)">
+              <div class="form-check">
+                <input class="form-check-input" type="radio"
+                       [checked]="adresseSelectionnee() === adresse"
+                       [id]="'addr-' + adresse.rue">
+                <label class="form-check-label" [for]="'addr-' + adresse.rue">
+                  <strong>{{ adresse.rue }}</strong><br>
+                  {{ adresse.ville }}, {{ adresse.codePostal }}<br>
+                  {{ adresse.pays }}
+                  <span *ngIf="adresse.parDefaut" class="badge bg-primary ms-2">Par défaut</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nouvelle adresse -->
+          <div *ngIf="modeNouvelleAdresse()">
+            <div class="mb-3">
+              <label class="form-label">Rue</label>
+              <input type="text" class="form-control" [(ngModel)]="nouvelleAdresse().rue" required>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Ville</label>
+                <input type="text" class="form-control" [(ngModel)]="nouvelleAdresse().ville" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Code postal</label>
+                <input type="text" class="form-control" [(ngModel)]="nouvelleAdresse().codePostal">
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons -->
+          <button class="btn btn-outline-secondary mb-3" (click)="toggleNouvelleAdresse()">
+            {{ modeNouvelleAdresse() ? '← Utiliser une adresse existante' : '+ Nouvelle adresse' }}
+          </button>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-secondary" (click)="allerEtape(1)">← Retour</button>
+            <button class="btn btn-primary flex-grow-1" (click)="allerEtape(3)">
+              Continuer vers le paiement →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 3 : Confirmation -->
+      <div *ngIf="etapeActuelle() === 3" class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">✅ Confirmation de commande</h5>
+        </div>
+        <div class="card-body">
+          <h6>Récapitulatif :</h6>
+          <ul>
+            <li>Nombre d'articles : {{ items().length }}</li>
+            <li>Sous-total : {{ total() }} DT</li>
+            <li>Frais de livraison : {{ fraisLivraison() }} DT</li>
+            <li class="fw-bold fs-5">Total : {{ totalFinal() }} DT</li>
+          </ul>
+
+          <hr>
+
+          <h6>Adresse de livraison :</h6>
+          <p *ngIf="adresseSelectionnee()">
+            {{ adresseSelectionnee()!.rue }}<br>
+            {{ adresseSelectionnee()!.ville }}, {{ adresseSelectionnee()!.codePostal }}<br>
+            {{ adresseSelectionnee()!.pays }}
+          </p>
+
+          <hr>
+
+          <h6>Mode de paiement :</h6>
+          <p>💵 Paiement à la livraison (Cash on Delivery)</p>
+
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-secondary" (click)="allerEtape(2)">← Retour</button>
+            <button class="btn btn-success flex-grow-1"
+                    (click)="confirmerCommande()"
+                    [disabled]="loading()">
+              <span *ngIf="!loading()">✅ Confirmer la commande</span>
+              <span *ngIf="loading()">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Traitement...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Résumé latéral -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top: 20px;">
+        <div class="card-header">
+          <h5 class="mb-0">💰 Résumé</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Sous-total</span>
+            <strong>{{ total() }} DT</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Livraison</span>
+            <strong>{{ fraisLivraison() }} DT</strong>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between mb-0">
+            <strong>Total</strong>
+            <strong class="text-primary fs-5">{{ totalFinal() }} DT</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer />

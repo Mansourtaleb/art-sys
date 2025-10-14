@@ -1,22 +1,40 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface StatistiquesGlobales {
-  nombreUtilisateurs: number;
+export interface Statistiques {
+  chiffreAffairesTotal: number;
+  chiffreAffairesMois: number;
+  chiffreAffairesSemaine: number;
+  chiffreAffairesJour: number;
+  nombreCommandesTotal: number;
+  nombreCommandesMois: number;
+  nombreCommandesSemaine: number;
+  nombreCommandesJour: number;
   nombreClients: number;
-  nombreArtistes: number;
-  nombreOeuvres: number;
-  nombreCommandes: number;
-  revenuTotal: number;
+  nombreNouveauxClientsMois: number;
+  nombreProduitsEnStock: number;
+  nombreProduitsStockFaible: number;
+  commandesParStatut: { [key: string]: number };
+  topProduits: TopProduit[];
+  revenusParCategorie: { [key: string]: number };
+  evolutionCA: ChiffreAffairesJour[];
+  nombreRetours: number;
+  nombreRetoursEnAttente: number;
 }
 
-export interface StatistiquesArtiste {
-  nombreOeuvres: number;
-  oeuvresVendues: number;
-  revenuTotal: number;
-  oeuvresPlusVendues: any[];
+export interface TopProduit {
+  produitId: string;
+  produitTitre: string;
+  quantiteVendue: number;
+  montantTotal: number;
+}
+
+export interface ChiffreAffairesJour {
+  date: string;
+  montant: number;
+  nombreCommandes: number;
 }
 
 @Injectable({
@@ -27,21 +45,7 @@ export class StatistiquesService {
 
   constructor(private http: HttpClient) {}
 
-  // Statistiques globales (Admin)
-  getStatistiquesGlobales(): Observable<StatistiquesGlobales> {
-    return this.http.get<StatistiquesGlobales>(`${this.apiUrl}/globales`);
-  }
-
-  // Statistiques artiste
-  getStatistiquesArtiste(): Observable<StatistiquesArtiste> {
-    return this.http.get<StatistiquesArtiste>(`${this.apiUrl}/artiste`);
-  }
-
-  // Statistiques par période
-  getStatistiquesPeriode(debut: Date, fin: Date): Observable<any> {
-    const params = new HttpParams()
-      .set('debut', debut.toISOString())
-      .set('fin', fin.toISOString());
-    return this.http.get(`${this.apiUrl}/periode`, { params });
+  getStatistiques(): Observable<Statistiques> {
+    return this.http.get<Statistiques>(this.apiUrl);
   }
 }

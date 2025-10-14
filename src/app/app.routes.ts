@@ -11,15 +11,11 @@ import { MesCommandesComponent } from './features/client/mes-commandes/mes-comma
 import { authGuard, roleGuard } from './core/guards';
 
 // Imports Artiste
-import { DashboardComponent as ArtisteDashboardComponent } from './features/artiste/dashboard/dashboard.component';
-import { CreateOeuvreComponent } from './features/artiste/create-oeuvre/create-oeuvre.component';
-import { MesOeuvresComponent } from './features/artiste/mes-oeuvres/mes-oeuvres.component';
-import { EditOeuvreComponent } from './features/artiste/edit-oeuvre/edit-oeuvre.component';
-import { CommandesRecuesComponent } from './features/artiste/commandes-recues/commandes-recues.component';
 import {UtilisateursComponent} from './features/admin/utilisateurs/utilisateurs.component';
 import {BannieresComponent} from './features/admin/bannieres/bannieres.component';
 import {CategoriesComponent} from './features/admin/categories/categories.component';
-import {   AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
+import {   DashboardAdminComponent } from './features/admin/dashboard-admin/dashboard-admin.component';
+import {GestionOeuvresComponent} from './features/admin/create-oeuvre/create-oeuvre.component';
 
 
 export const routes: Routes = [
@@ -61,36 +57,14 @@ export const routes: Routes = [
     path: 'artiste',
     canActivate: [authGuard],
     children: [
-      {
-        path: 'dashboard',
-        component: ArtisteDashboardComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['ARTISTE'] }
-      },
+
       {
         path: 'create-oeuvre',
-        component: CreateOeuvreComponent,
+        component: GestionOeuvresComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ARTISTE'] }
+        data: { roles: ['ADMIN'] }
       },
-      {
-        path: 'mes-oeuvres',
-        component: MesOeuvresComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['ARTISTE'] }
-      },
-      {
-        path: 'edit-oeuvre/:id',
-        component: EditOeuvreComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['ARTISTE'] }
-      },
-      {
-        path: 'commandes',
-        component: CommandesRecuesComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['ARTISTE'] }
-      },
+
       // Routes Admin
       {
         path: 'admin',
@@ -98,7 +72,7 @@ export const routes: Routes = [
         children: [
           {
             path: 'dashboard',
-            component: AdminDashboardComponent,
+            component: DashboardAdminComponent,
             canActivate: [roleGuard],
             data: { roles: ['ADMIN'] }
           },
@@ -119,6 +93,11 @@ export const routes: Routes = [
             component: UtilisateursComponent,
             canActivate: [roleGuard],
             data: { roles: ['ADMIN'] }
+          },
+          {
+            path: 'checkout',
+            component: CheckoutComponent,
+            canActivate: [authGuard]
           },
           {
     path: 'admin',
