@@ -1,4 +1,4 @@
-<app-navbar></app-navbar>
+<div class="container-fluid">
 
 <div class="container-fluid mt-4">
   <h2 class="mb-4">Gestion des Commandes</h2>
@@ -122,7 +122,7 @@
           <div class="col-md-6">
             <h6>Adresse de livraison</h6>
             <p *ngIf="selectedCommande()!.adresseLivraison">
-              {{ selectedCommande()!.adresseLivraison.adresse || selectedCommande()!.adresseLivraison.rue }}<br>
+              {{ selectedCommande()!.adresseLivraison.adresse }}<br>
               {{ selectedCommande()!.adresseLivraison.ville }},
               {{ selectedCommande()!.adresseLivraison.codePostal }}<br>
               {{ selectedCommande()!.adresseLivraison.pays }}
@@ -141,13 +141,14 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let item of selectedCommande()!.items || selectedCommande()!.produits">
+          <tr *ngFor="let item of selectedCommande()!.produits">
             <td>{{ item.titre }}</td>
             <td>{{ item.quantite }}</td>
             <td>{{ item.prix }} DT</td>
             <td>{{ item.quantite * item.prix }} DT</td>
           </tr>
           </tbody>
+
           <tfoot>
           <tr>
             <th colspan="3">Total</th>
@@ -163,8 +164,7 @@
   </div>
 </div>
 
-<app-footer></app-footer>
-
+  </div>
 
 
 

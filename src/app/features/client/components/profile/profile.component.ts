@@ -73,7 +73,14 @@ export class ProfileComponent implements OnInit {
 
   loadProfile(): void {
     this.loading.set(true);
-    this.utilisateurService.getUtilisateurConnecte().subscribe({
+    const userId = this.authService.currentUser()?.userId;
+
+    if (!userId) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    this.utilisateurService.getUtilisateurById(userId).subscribe({
       next: (data) => {
         this.utilisateur.set(data);
         this.editData.set({ ...data });
@@ -82,6 +89,7 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         console.error('Erreur chargement profil:', err);
         this.loading.set(false);
+        this.router.navigate(['/auth/login']);
       }
     });
   }

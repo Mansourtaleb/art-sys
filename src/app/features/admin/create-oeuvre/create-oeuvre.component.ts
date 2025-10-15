@@ -2,16 +2,14 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { OeuvreService } from '../../../core/services/oeuvre.service';
-import { CategorieService } from '../../../core/services/categorie.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { OeuvreService } from '../../../core/services';
+import { CategorieService } from '../../../core/services';
+import { AuthService } from '../../../core/services';
 
 @Component({
   selector: 'app-create-oeuvre',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './create-oeuvre.component.html', // Corriger le nom du template
   styleUrl: './create-oeuvre.component.scss'
 })

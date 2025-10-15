@@ -17,7 +17,6 @@ export interface Commande {
   clientEmail?: string;
   clientTelephone?: string;
   produits: ProduitCommande[];
-  items?: ProduitCommande[]; // Alias pour compatibilité
   montantTotal: number;
   adresseLivraison: AdresseLivraison;
   statut: StatutCommande;

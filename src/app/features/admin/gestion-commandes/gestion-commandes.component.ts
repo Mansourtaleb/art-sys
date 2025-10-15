@@ -1,15 +1,14 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CommandeService } from '../../../core/services/commande.service';
-import { Commande } from '../../../core/models/commande.model';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { CommandeService } from '../../../core/services';
+import { Commande } from '../../../core/models';
+
 
 @Component({
   selector: 'app-gestion-commandes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gestion-commandes.component.html',
   styleUrl: './gestion-commandes.component.scss'
 })

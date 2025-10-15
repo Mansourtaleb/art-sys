@@ -1,4 +1,5 @@
-﻿import { RoleUtilisateur } from './enums';
+﻿// src/app/core/models/auth.model.ts
+import { RoleUtilisateur } from './enums';
 
 export interface RegisterRequest {
   nom: string;
@@ -28,13 +29,9 @@ export interface ResetPasswordDTO {
 
 export interface AuthResponse {
   token: string;
-  userId: string; // Changer 'id' en 'userId'
+  userId: string;
   nom: string;
   email: string;
   role: RoleUtilisateur;
   emailVerifie: boolean;
 }
-
-
-
-

@@ -7,7 +7,7 @@ import { CartService } from '../../../core/services';
 import { CommandeService } from '../../../core/services';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
-import {CartItem} from '../../../core/models';
+import { CartItem } from '../../../core/models';
 
 @Component({
   selector: 'app-checkout',
@@ -47,19 +47,16 @@ export class CheckoutComponent {
     this.error.set(null);
 
     try {
-      // ✅ STRUCTURE CORRECTE selon CommandeRequest
       const commandeData = {
         produits: this.items().map((item: CartItem) => ({
-          oeuvreId: item.oeuvreId,  // ✅ Correct
-          quantite: item.quantite     // ✅ Correct
+          oeuvreId: item.oeuvreId,
+          quantite: item.quantite
         })),
         adresseLivraison: this.adresse()
       };
 
       await lastValueFrom(this.commandeService.creerCommande(commandeData));
-
       this.cartService.clear();
-
       alert('✅ Commande passée avec succès !');
       this.router.navigate(['/client/commandes']);
     } catch (err: any) {

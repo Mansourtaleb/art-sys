@@ -1,17 +1,16 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { OeuvreService } from '../../../core/services/oeuvre.service';
-import { CategorieService } from '../../../core/services/categorie.service';
-import { Oeuvre } from '../../../core/models/oeuvre.model';
-import { Categorie } from '../../../core/models/categorie.model';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { OeuvreService } from '../../../core/services';
+import { CategorieService } from '../../../core/services';
+import { Oeuvre } from '../../../core/models';
+import { Categorie } from '../../../core/models';
+
 
 @Component({
   selector: 'app-gestion-produits',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gestion-produits.component.html',
   styleUrl: './gestion-produits.component.scss'
 })

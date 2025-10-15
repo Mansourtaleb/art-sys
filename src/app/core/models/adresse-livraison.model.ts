@@ -1,9 +1,8 @@
 ﻿
 export interface AdresseLivraison {
-  rue?: string;
   nom?: string;
   telephone?: string;
-  adresse?: string;
+  adresse: string;
   ville: string;
   codePostal: string;
   pays: string;
