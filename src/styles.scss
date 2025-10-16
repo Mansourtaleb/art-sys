@@ -1,125 +1,83 @@
-/* You can add global styles to this file, and also import other style files */
-/* Reset & Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Global Design System + Theme */
+/* -------------------------------------------------- */
+/* Import Bootstrap SCSS using @use + with to set variables */
+@use 'sass:color';
+// Local brand vars for use in this file
+$brand-primary: #4f46e5;
+
+@use 'bootstrap/scss/bootstrap' as * with (
+  $primary: $brand-primary,
+  $secondary: #64748b,
+  $success: #16a34a,
+  $info: #0ea5e9,
+  $warning: #f59e0b,
+  $danger: #ef4444,
+  $light: #f8fafc,
+  $dark: #0f172a,
+  $font-family-sans-serif: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+  $border-radius: .6rem,
+  $border-radius-sm: .4rem,
+  $border-radius-lg: .8rem,
+  $btn-border-radius: .6rem,
+  $btn-border-radius-sm: .4rem,
+  $btn-border-radius-lg: .8rem
+);
+@import url('bootstrap-icons/font/bootstrap-icons.css');
+
+/* Base resets */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  font-family: $font-family-sans-serif;
+  background-color: #f5f7fb; /* clean neutral */
+  color: #0f172a;
 }
 
-/* Auth Container */
+/* Typography */
+h1, h2, h3, h4, h5, h6 { color: #0f172a; font-weight: 600; }
+p { color: #334155; }
+a { color: $brand-primary; text-decoration: none; }
+a:hover { color: color.adjust($brand-primary, $lightness: -6%); text-decoration: underline; }
+
+/* Cards & Surfaces */
+.card { border: 1px solid rgba(15,23,42,0.06); box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
+.card .card-header { background: #fff; border-bottom-color: rgba(15,23,42,0.06); font-weight: 600; }
+
+/* Buttons */
+.btn-primary { box-shadow: 0 6px 18px rgba(79,70,229,0.28); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(79,70,229,0.34); }
+.btn { font-weight: 600; }
+
+/* Tables */
+.table { --bs-table-bg: #fff; }
+.table thead th { background: #f1f5f9; color: #0f172a; font-weight: 600; border-bottom-color: rgba(15,23,42,0.08); }
+.table td, .table th { vertical-align: middle; }
+.table-hover tbody tr:hover td { background: rgba(79,70,229,0.04); }
+
+/* Forms */
+.form-control { border-radius: $border-radius; border-color: #e2e8f0; }
+.form-control:focus { border-color: rgba(79,70,229,0.6); box-shadow: 0 0 0 .2rem rgba(79,70,229,0.18); }
+.form-label { color: #0f172a; font-weight: 500; }
+
+/* Alerts */
+.alert { border: 0; border-radius: $border-radius; }
+
+/* Auth pages: keep gradient only here */
 .auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-}
-
-.auth-card {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  max-width: 450px;
-  width: 100%;
-  padding: 40px;
-}
-
-.auth-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.auth-header h2 {
-  color: #333;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.auth-header p {
-  color: #666;
-  font-size: 14px;
-}
-
-/* Form Styles */
-.form-label {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.form-control {
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  transition: all 0.3s;
-}
-
-.form-control:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-
-.btn-primary {
+  padding: 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 12px;
-  font-weight: 600;
-  transition: transform 0.2s;
 }
+.auth-card { background: #fff; border-radius: 16px; padding: 40px; max-width: 460px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.12); }
+.auth-header { text-align: center; margin-bottom: 24px; }
+.auth-header h2 { margin-bottom: 8px; }
+.auth-header p { color: #475569; }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Alert Styles */
-.alert {
-  border-radius: 8px;
-  border: none;
-}
-
-.alert-success {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.alert-danger {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Links */
-.auth-link {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.auth-link:hover {
-  color: #764ba2;
-}
-
-/* Loading Spinner */
-.spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
-  border-width: 0.15em;
-}
-
-
-/* Bootstrap */
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
+/* Utilities */
+.elevated { box-shadow: 0 12px 32px rgba(15,23,42,0.10) !important; }
+.rounded-xl { border-radius: 1rem !important; }
+.muted { color: #64748b !important; }
