@@ -1,35 +1,31 @@
 /* Global Design System + Theme */
 /* -------------------------------------------------- */
-/* Import Bootstrap SCSS using @use + with to set variables */
-@use 'sass:color';
-// Local brand vars for use in this file
-$brand-primary: #4f46e5;
-
-@use 'bootstrap/scss/bootstrap' as * with (
-  $primary: $brand-primary,
-  $secondary: #64748b,
-  $success: #16a34a,
-  $info: #0ea5e9,
-  $warning: #f59e0b,
-  $danger: #ef4444,
-  $light: #f8fafc,
-  $dark: #0f172a,
-  $font-family-sans-serif: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-  $border-radius: .6rem,
-  $border-radius-sm: .4rem,
-  $border-radius-lg: .8rem,
-  $btn-border-radius: .6rem,
-  $btn-border-radius-sm: .4rem,
-  $btn-border-radius-lg: .8rem
-);
+/* Use Bootstrap compiled CSS and override CSS variables for broad compatibility */
+@import url('bootstrap/dist/css/bootstrap.min.css');
 @import url('bootstrap-icons/font/bootstrap-icons.css');
+
+/* Theme variables (Bootstrap CSS variables) */
+:root {
+  --brand-primary: #4f46e5;
+  --bs-primary: #4f46e5;
+  --bs-secondary: #64748b;
+  --bs-success: #16a34a;
+  --bs-info: #0ea5e9;
+  --bs-warning: #f59e0b;
+  --bs-danger: #ef4444;
+  --bs-light: #f8fafc;
+  --bs-dark: #0f172a;
+  --bs-border-radius: .6rem;
+  --bs-border-radius-sm: .4rem;
+  --bs-border-radius-lg: .8rem;
+}
 
 /* Base resets */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
 body {
-  font-family: $font-family-sans-serif;
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   background-color: #f5f7fb; /* clean neutral */
   color: #0f172a;
 }
@@ -37,8 +33,8 @@ body {
 /* Typography */
 h1, h2, h3, h4, h5, h6 { color: #0f172a; font-weight: 600; }
 p { color: #334155; }
-a { color: $brand-primary; text-decoration: none; }
-a:hover { color: color.adjust($brand-primary, $lightness: -6%); text-decoration: underline; }
+a { color: var(--brand-primary); text-decoration: none; }
+a:hover { color: #3f37c9; text-decoration: underline; }
 
 /* Cards & Surfaces */
 .card { border: 1px solid rgba(15,23,42,0.06); box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
@@ -56,12 +52,12 @@ a:hover { color: color.adjust($brand-primary, $lightness: -6%); text-decoration:
 .table-hover tbody tr:hover td { background: rgba(79,70,229,0.04); }
 
 /* Forms */
-.form-control { border-radius: $border-radius; border-color: #e2e8f0; }
+.form-control { border-radius: var(--bs-border-radius); border-color: #e2e8f0; }
 .form-control:focus { border-color: rgba(79,70,229,0.6); box-shadow: 0 0 0 .2rem rgba(79,70,229,0.18); }
 .form-label { color: #0f172a; font-weight: 500; }
 
 /* Alerts */
-.alert { border: 0; border-radius: $border-radius; }
+.alert { border: 0; border-radius: var(--bs-border-radius); }
 
 /* Auth pages: keep gradient only here */
 .auth-container {
