@@ -33,7 +33,7 @@ export class UtilisateurService {
   }
 
   changePassword(id: string, ancienMotDePasse: string, nouveauMotDePasse: string): Observable<{ message: string }> {
-    return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/password`, {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/change-password`, {
       ancienMotDePasse,
       nouveauMotDePasse
     });

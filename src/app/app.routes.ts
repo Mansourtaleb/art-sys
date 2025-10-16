@@ -3,8 +3,6 @@ import { Routes } from '@angular/router';
 import { HomePageComponent } from './features/home/components/home-page/home-page.component';
 import { OeuvreListComponent } from './features/oeuvres/components/oeuvre-list/oeuvre-list.component';
 import { OeuvreDetailComponent } from './features/oeuvres/components/oeuvre-detail/oeuvre-detail.component';
-import { LoginComponent } from './features/auth/components/login/login.component';
-import { RegisterComponent } from './features/auth/components/register/register.component';
 import { ProfileComponent } from './features/client/components/profile/profile.component';
 import { CartPageComponent } from './features/cart/cart-page/cart-page.component';
 import { CheckoutComponent } from './features/cart/checkout/checkout.component';
@@ -17,9 +15,11 @@ export const routes: Routes = [
   { path: 'oeuvres', component: OeuvreListComponent },
   { path: 'oeuvres/:id', component: OeuvreDetailComponent },
 
-  // Auth
-  { path: 'auth/login', component: LoginComponent },
-  { path: 'auth/register', component: RegisterComponent },
+  // ✅ CORRECTION : Charger TOUTES les routes auth via loadChildren
+  {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
+  },
 
   // Cart
   { path: 'cart', component: CartPageComponent },

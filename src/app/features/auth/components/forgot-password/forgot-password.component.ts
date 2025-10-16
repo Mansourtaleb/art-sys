@@ -38,9 +38,8 @@ export class ForgotPasswordComponent {
       next: (response) => {
         this.loading.set(false);
         this.successMessage.set(response.message);
-        setTimeout(() => {
-          this.router.navigate(['/auth/reset-password']);
-        }, 2000);
+        // ✅ CORRECTION : Plus de redirection automatique
+        // L'utilisateur clique manuellement sur le bouton
       },
       error: (error) => {
         this.loading.set(false);
