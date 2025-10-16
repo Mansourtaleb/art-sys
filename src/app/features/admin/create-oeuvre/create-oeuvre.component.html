@@ -1,4 +1,4 @@
-﻿<div class="container-fluid">
+<div class="container-fluid">
 
 <div class="container mt-4 mb-5">
   <div class="row justify-content-center">
@@ -93,7 +93,7 @@
                           name="categorie"
                           required>
                     <option value="">-- Sélectionner --</option>
-                    <option *ngFor="let cat of categories()" [value]="cat.id">
+                    <option *ngFor="let cat of categoriesList" [value]="cat.id">
                       {{ cat.nom }}
                     </option>
                   </select>
@@ -106,10 +106,10 @@
               <label for="image" class="form-label">
                 Image de l'œuvre
               </label>
-              <input type="file"
+              <input #fileInput type="file"
                      class="form-control"
                      id="image"
-                     (change)="onFileSelected($event)"
+                     (change)="onFileChange(fileInput.files)"
                      accept="image/*">
               <small class="text-muted">
                 Formats acceptés: JPG, PNG, GIF (max 5MB)
@@ -196,7 +196,7 @@
             <div class="d-flex justify-content-between">
               <button type="button"
                       class="btn btn-secondary"
-                      (click)="cancel()">
+                      (click)="onCancel()">
                 <i class="bi bi-x-circle"></i> Annuler
               </button>
               <button type="submit"
@@ -217,8 +217,3 @@
     </div>
   </div>
 </div>
-
-  </div>
-
-
-

@@ -1,0 +1,61 @@
+<div class="container py-4">
+  <h2 class="mb-4">Nouveau produit personnalisé</h2>
+
+  <div class="card elevated">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Type de produit *</label>
+          <select class="form-select" [(ngModel)]="form.typeProduit">
+            <option value="" disabled>Choisir…</option>
+            <option *ngFor="let t of typeProduits" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Template ID *</label>
+          <input class="form-control" [(ngModel)]="form.templateId" placeholder="ex: TPL-001">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Prix (TND) *</label>
+          <input type="number" class="form-control" [(ngModel)]="form.prix" min="0" step="0.1">
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label class="form-label">Personnalisations</label>
+        <div class="row g-2 align-items-center" *ngFor="let p of personnalisations; index as i">
+          <div class="col-md-5"><input class="form-control" [(ngModel)]="p.key" placeholder="Clé (ex: couleur)"></div>
+          <div class="col-md-5"><input class="form-control" [(ngModel)]="p.value" placeholder="Valeur (ex: bleu)"></div>
+          <div class="col-md-2 text-end">
+            <button class="btn btn-outline-danger" (click)="removePersonnalisation(i)" [disabled]="personnalisations.length===1">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-outline-primary mt-2" (click)="addPersonnalisation()"><i class="bi bi-plus"></i> Ajouter</button>
+      </div>
+
+      <div class="row g-3 mt-4">
+        <div class="col-md-6">
+          <label class="form-label">Logo (optionnel)</label>
+          <input type="file" class="form-control" accept="image/*" (change)="onLogoSelected($event)" [disabled]="logoUploading()">
+          <div class="text-muted small mt-1">PNG/JPG, max 5MB</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Notes (optionnel)</label>
+          <textarea class="form-control" rows="1" [(ngModel)]="form.notes"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 mt-4">
+        <button class="btn btn-primary" (click)="submit()" [disabled]="loading() || logoUploading()">
+          <span *ngIf="loading()" class="spinner-border spinner-border-sm me-2"></span>
+          Créer
+        </button>
+        <div class="text-danger" *ngIf="error()">{{ error() }}</div>
+        <div class="text-success" *ngIf="success()">Créé avec succès</div>
+      </div>
+    </div>
+  </div>
+</div>
+

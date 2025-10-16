@@ -34,8 +34,8 @@
                     <td><strong>{{ cat.nom }}</strong></td>
                     <td>{{ cat.description }}</td>
                     <td>
-                      <span [class]="'badge ' + (cat.active ? 'bg-success' : 'bg-secondary')">
-                        {{ cat.active ? 'Active' : 'Inactive' }}
+                      <span [class]="'badge ' + (cat.actif ? 'bg-success' : 'bg-secondary')">
+                        {{ cat.actif ? 'Active' : 'Inactive' }}
                       </span>
                     </td>
                     <td>
@@ -49,9 +49,9 @@
                       <button
                         class="btn btn-sm btn-outline-warning me-2"
                         (click)="toggleActive(cat)"
-                        [title]="cat.active ? 'Désactiver' : 'Activer'"
+                        [title]="cat.actif ? 'Désactiver' : 'Activer'"
                       >
-                        <i [class]="'bi bi-' + (cat.active ? 'eye-slash' : 'eye')"></i>
+                        <i [class]="'bi bi-' + (cat.actif ? 'eye-slash' : 'eye')"></i>
                       </button>
                       <button
                         class="btn btn-sm btn-outline-danger"
@@ -112,7 +112,7 @@
             <input
               type="checkbox"
               class="form-check-input"
-              [(ngModel)]="currentCategorie().active"
+              [(ngModel)]="currentCategorie().actif"
               id="activeCheck"
             >
             <label class="form-check-label" for="activeCheck">
@@ -135,3 +135,8 @@
 }
   </div>
   </div>
+
+
+
+
+

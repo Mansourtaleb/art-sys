@@ -37,6 +37,7 @@ export const routes: Routes = [
     children: [
       { path: 'profile', component: ProfileComponent },
       { path: 'commandes', component: MesCommandesComponent },
+      { path: 'produits/nouveau', loadComponent: () => import('./features/client/produit-personnalise/create-produit-personnalise.component').then(m => m.CreateProduitPersonnaliseComponent) },
       { path: '', redirectTo: 'profile', pathMatch: 'full' }
     ]
   },

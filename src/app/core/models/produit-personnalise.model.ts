@@ -5,18 +5,22 @@ export interface ProduitPersonnalise {
   clientId: string;
   clientNom: string;
   typeProduit: string;
-  designPersonnalise: string;
-  quantite: number;
+  templateId: string;
+  personnalisations: { [key: string]: string };
   prix: number;
   statut: StatutProduitPersonnalise;
+  previewUrl?: string;
   dateCreation: Date;
-  description?: string;
+  dateModification?: Date;
+  logoUrl?: string;
+  notes?: string;
 }
 
 export interface ProduitPersonnaliseRequest {
   typeProduit: string;
-  designPersonnalise: string;
-  quantite: number;
-  prix: number;
-  description?: string;
+  templateId: string;
+  personnalisations: { [key: string]: string };
+  prix: number; // BigDecimal côté backend
+  logoUrl?: string;
+  notes?: string;
 }

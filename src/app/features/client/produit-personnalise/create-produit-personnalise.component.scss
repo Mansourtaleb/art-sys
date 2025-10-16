@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.card {
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+label.form-label { font-weight: 600; }
+
+.btn-outline-primary { border-color: var(--brand-primary); color: var(--brand-primary); }
+.btn-outline-primary:hover { background: var(--brand-primary); color: #fff; }
+

@@ -23,7 +23,7 @@ export class CategoriesComponent {
     id: '',
     nom: '',
     description: '',
-    active: true
+    actif: true
   });
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class CategoriesComponent {
       id: '',
       nom: '',
       description: '',
-      active: true
+      actif: true
     });
     this.showModal.set(true);
   }
@@ -76,7 +76,7 @@ export class CategoriesComponent {
     const data = {
       nom: this.currentCategorie().nom,
       description: this.currentCategorie().description,
-      active: this.currentCategorie().active
+      actif: this.currentCategorie().actif
     };
 
     if (this.editMode()) {
@@ -108,13 +108,16 @@ export class CategoriesComponent {
 
   toggleActive(categorie: any): void {
     const data = {
-      ...categorie,
-      active: !categorie.active
+      nom: categorie.nom,
+      description: categorie.description,
+      imageUrl: categorie.imageUrl,
+      actif: !categorie.actif,
+      ordre: categorie.ordre
     };
 
     this.categorieService.updateCategorie(categorie.id, data).subscribe({
       next: () => {
-        alert(`✅ Catégorie ${data.active ? 'activée' : 'désactivée'}`);
+        alert(`✅ Catégorie ${data.actif ? 'activée' : 'désactivée'}`);
         this.loadCategories();
       },
       error: (err: any) => {
@@ -141,3 +144,4 @@ export class CategoriesComponent {
     });
   }
 }
+
