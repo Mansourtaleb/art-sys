@@ -8,8 +8,9 @@ export interface Banniere {
   lienVers: string;
   ordre: number;
   actif: boolean;
-  dateDebut?: Date;
-  dateFin?: Date;
+  // L'API renvoie des dates ISO; on les garde en string/null
+  dateDebut?: string | null;
+  dateFin?: string | null;
 }
 
 export interface BanniereRequest {
@@ -19,6 +20,7 @@ export interface BanniereRequest {
   lienVers: string;
   ordre?: number;
   actif?: boolean;
-  dateDebut?: Date;
-  dateFin?: Date;
+  // Utiliser string (LocalDateTime) pour correspondre à l'API
+  dateDebut?: string;
+  dateFin?: string;
 }
