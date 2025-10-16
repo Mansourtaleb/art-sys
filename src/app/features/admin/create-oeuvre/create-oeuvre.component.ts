@@ -17,6 +17,8 @@ export class GestionOeuvresComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   success = signal(false);
+  showDimensions = false; // ← AJOUTER CETTE LIGNE
+
 
   categories = signal<any[]>([]);
   selectedFile: File | null = null;
@@ -104,17 +106,21 @@ export class GestionOeuvresComponent implements OnInit {
     const buildPayload = (images?: string[]): OeuvreRequest => ({
       titre: this.oeuvre.titre,
       description: this.oeuvre.description,
-      categorie: this.oeuvre.categorieId,
+      categorieId: this.oeuvre.categorieId,  // ← CORRECTION ICI
       prix: this.oeuvre.prix,
       quantiteDisponible: this.oeuvre.stockDisponible,
       images
     });
 
     const sendCreate = (payload: OeuvreRequest) => {
+      console.log('📤 Payload envoyé:', payload);  // ← AJOUTE CETTE LIGNE
+
       this.oeuvreService.creerOeuvre(payload).subscribe({
         next: () => finalizeSuccess(),
         error: (err) => {
           console.error('Erreur création œuvre:', err);
+          console.error('❌ Message:', err.error);  // ← AJOUTE CETTE LIGNE
+
           this.error.set(err.error?.message || "Erreur lors de la création de l'œuvre");
           this.loading.set(false);
         }

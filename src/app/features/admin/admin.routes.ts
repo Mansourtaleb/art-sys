@@ -8,6 +8,7 @@ import { UtilisateursComponent } from './utilisateurs/utilisateurs.component';
 import { GestionOeuvresComponent } from './create-oeuvre/create-oeuvre.component';
 import { GestionCommandesComponent } from './gestion-commandes/gestion-commandes.component';
 import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
+import {EditOeuvreComponent} from './edit-oeuvre/edit-oeuvre.component';
 
 export const adminRoutes: Routes = [
   {
@@ -21,7 +22,9 @@ export const adminRoutes: Routes = [
       { path: 'utilisateurs', component: UtilisateursComponent },
       { path: 'oeuvres', component: GestionProduitsComponent },
       { path: 'oeuvres/create', component: GestionOeuvresComponent },
-      { path: 'commandes', component: GestionCommandesComponent }
+      { path: 'commandes', component: GestionCommandesComponent },
+      { path: 'oeuvres/edit/:id', component: EditOeuvreComponent } // ← AJOUTE
+
     ]
   }
 ];

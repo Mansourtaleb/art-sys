@@ -109,7 +109,7 @@
               <input #fileInput type="file"
                      class="form-control"
                      id="image"
-                     (change)="onFileChange(fileInput.files)"
+                     (change)="onFileSelected($event)"
                      accept="image/*">
               <small class="text-muted">
                 Formats acceptés: JPG, PNG, GIF (max 5MB)
@@ -137,48 +137,62 @@
                      placeholder="Ex: Huile sur toile, Aquarelle, Photographie numérique...">
             </div>
 
-            <!-- Dimensions -->
-            <div class="row">
-              <div class="col-md-4">
-                <div class="mb-3">
-                  <label for="largeur" class="form-label">
-                    Largeur (cm)
-                  </label>
-                  <input type="number"
-                         class="form-control"
-                         id="largeur"
-                         [(ngModel)]="oeuvre.dimensions.largeur"
-                         name="largeur"
-                         min="0">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="mb-3">
-                  <label for="hauteur" class="form-label">
-                    Hauteur (cm)
-                  </label>
-                  <input type="number"
-                         class="form-control"
-                         id="hauteur"
-                         [(ngModel)]="oeuvre.dimensions.hauteur"
-                         name="hauteur"
-                         min="0">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="mb-3">
-                  <label for="profondeur" class="form-label">
-                    Profondeur (cm)
-                  </label>
-                  <input type="number"
-                         class="form-control"
-                         id="profondeur"
-                         [(ngModel)]="oeuvre.dimensions.profondeur"
-                         name="profondeur"
-                         min="0">
-                </div>
-              </div>
+            <!-- Checkbox pour afficher les dimensions -->
+            <div class="form-check mb-3">
+              <input type="checkbox"
+                     class="form-check-input"
+                     id="showDimensions"
+                     [(ngModel)]="showDimensions"
+                     name="showDimensions">
+              <label class="form-check-label" for="showDimensions">
+                Ajouter les dimensions de l'œuvre
+              </label>
             </div>
+
+            <!-- Dimensions (conditionnelles) -->
+            @if (showDimensions) {
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="largeur" class="form-label">
+                      Largeur (cm)
+                    </label>
+                    <input type="number"
+                           class="form-control"
+                           id="largeur"
+                           [(ngModel)]="oeuvre.dimensions.largeur"
+                           name="largeur"
+                           min="0">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="hauteur" class="form-label">
+                      Hauteur (cm)
+                    </label>
+                    <input type="number"
+                           class="form-control"
+                           id="hauteur"
+                           [(ngModel)]="oeuvre.dimensions.hauteur"
+                           name="hauteur"
+                           min="0">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="profondeur" class="form-label">
+                      Profondeur (cm)
+                    </label>
+                    <input type="number"
+                           class="form-control"
+                           id="profondeur"
+                           [(ngModel)]="oeuvre.dimensions.profondeur"
+                           name="profondeur"
+                           min="0">
+                  </div>
+                </div>
+              </div>
+            }
 
             <!-- Disponibilité -->
             <div class="form-check mb-3">
@@ -216,4 +230,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

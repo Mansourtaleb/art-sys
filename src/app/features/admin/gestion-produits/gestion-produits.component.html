@@ -1,14 +1,11 @@
 ﻿<div class="container-fluid mt-4">
   <h2 class="mb-4">Gestion des Œuvres</h2>
 
-<div class="container-fluid mt-4">
-  <h2 class="mb-4">Gestion des Œuvres</h2>
-
   <!-- Bouton Ajouter -->
   <div class="mb-3">
-    <button class="btn btn-primary" (click)="openModal()">
+    <a [routerLink]="['/admin/create-oeuvre']" class="btn btn-primary">
       <i class="bi bi-plus-circle"></i> Ajouter une œuvre
-    </button>
+    </a>
   </div>
 
   <!-- Filtres -->
@@ -47,7 +44,7 @@
 
   <!-- Tableau -->
   <div *ngIf="!loading()" class="table-responsive">
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
       <thead class="table-dark">
       <tr>
         <th>Image</th>
@@ -63,7 +60,7 @@
       <tbody>
       <tr *ngFor="let oeuvre of oeuvresFiltered()">
         <td>
-          <img [src]="oeuvre.imageUrl || 'assets/images/placeholder.jpg'"
+          <img [src]="(oeuvre.images && oeuvre.images.length > 0) ? oeuvre.images[0] : 'https://placehold.co/60x60/667eea/ffffff?text=Art'"
                [alt]="oeuvre.titre"
                class="img-thumbnail"
                style="width: 60px; height: 60px; object-fit: cover;">
@@ -75,38 +72,52 @@
         </td>
         <td>{{ oeuvre.artisteNom || 'N/A' }}</td>
         <td>
-          <span class="badge bg-secondary">{{ oeuvre.categorieNom || 'Non catégorisé' }}</span>
+          <!-- ✅ CORRECTION ICI -->
+          <span *ngIf="oeuvre.categorie && oeuvre.categorie.length < 30"
+                class="badge bg-info">
+            {{ oeuvre.categorie }}
+          </span>
+          <span *ngIf="!oeuvre.categorie || oeuvre.categorie.length >= 30"
+                class="badge bg-secondary">
+            Non catégorisé
+          </span>
         </td>
         <td>{{ oeuvre.prix }} DT</td>
         <td>
-            <span [ngClass]="{
-              'text-success': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) > 10,
-              'text-warning': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) > 0 && (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) <= 10,
-              'text-danger': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) === 0
-            }">
-              {{ oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0 }}
-            </span>
+          <span [ngClass]="{
+            'text-success': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) > 10,
+            'text-warning': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) > 0 && (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) <= 10,
+            'text-danger': (oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0) === 0
+          }">
+            {{ oeuvre.stockDisponible || oeuvre.quantiteDisponible || 0 }}
+          </span>
         </td>
         <td>
-            <span class="badge"
-                  [ngClass]="{
-                    'bg-success': oeuvre.disponible,
-                    'bg-danger': !oeuvre.disponible
-                  }">
-              {{ oeuvre.disponible ? 'Disponible' : 'Indisponible' }}
-            </span>
+          <span class="badge"
+                [ngClass]="{
+                  'bg-success': oeuvre.statut === 'PUBLIE',
+                  'bg-warning': oeuvre.statut === 'BROUILLON',
+                  'bg-danger': oeuvre.statut === 'ARCHIVE'
+                }">
+            {{ oeuvre.statut || 'PUBLIE' }}
+          </span>
         </td>
         <td>
-          <button class="btn btn-sm btn-warning me-1"
-                  (click)="editOeuvre(oeuvre)"
-                  title="Modifier">
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="btn btn-sm btn-danger"
-                  (click)="deleteOeuvre(oeuvre.id)"
-                  title="Supprimer">
-            <i class="bi bi-trash"></i>
-          </button>
+          <div class="btn-group" role="group">
+            <!-- ✅ BOUTON MODIFIER -->
+            <button class="btn btn-sm btn-warning"
+                    [routerLink]="['/admin/oeuvres/edit', oeuvre.id]"
+                    title="Modifier">
+              <i class="bi bi-pencil"></i>
+            </button>
+
+            <!-- Bouton Supprimer -->
+            <button class="btn btn-sm btn-danger"
+                    (click)="deleteOeuvre(oeuvre.id)"
+                    title="Supprimer">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </td>
       </tr>
       </tbody>
@@ -117,8 +128,3 @@
     </div>
   </div>
 </div>
-
-</div>
-
-
-

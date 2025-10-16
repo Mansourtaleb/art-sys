@@ -32,9 +32,9 @@ export interface Oeuvre {
 export interface OeuvreRequest {
   titre: string;
   description: string;
-  categorie: string;
+  categorieId: string;  // ← Doit être categorieId
   prix: number;
   quantiteDisponible: number;
   images?: string[];
-  statut?: StatutOeuvre;
+  statut?: string;
 }

@@ -1,41 +1,43 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { OeuvreService } from '../../../core/services';
-import { CategorieService } from '../../../core/services';
-import { Oeuvre } from '../../../core/models';
-import { Categorie } from '../../../core/models';
-
+import { RouterModule } from '@angular/router';
+import { OeuvreService, CategorieService } from '../../../core/services';
 
 @Component({
   selector: 'app-gestion-produits',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './gestion-produits.component.html',
-  styleUrl: './gestion-produits.component.scss'
+  styleUrls: ['./gestion-produits.component.scss']
 })
 export class GestionProduitsComponent implements OnInit {
-  oeuvres = signal<Oeuvre[]>([]);
-  categories = signal<Categorie[]>([]);
   loading = signal(false);
+  oeuvres = signal<any[]>([]);
+  categories = signal<any[]>([]);
+
   searchTerm = '';
   filterCategorie = '';
 
-  // Utiliser computed signal pour le filtrage
   oeuvresFiltered = computed(() => {
     let filtered = this.oeuvres();
 
+    // Filtre par recherche
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(o =>
-        o.titre.toLowerCase().includes(term) ||
-        o.description?.toLowerCase().includes(term) ||
-        o.artisteNom?.toLowerCase().includes(term)
+        o.titre?.toLowerCase().includes(term) ||
+        o.artisteNom?.toLowerCase().includes(term) ||
+        o.description?.toLowerCase().includes(term)
       );
     }
 
+    // Filtre par catégorie
     if (this.filterCategorie) {
-      filtered = filtered.filter(o => o.categorieId === this.filterCategorie);
+      filtered = filtered.filter(o =>
+        o.categorieId === this.filterCategorie ||
+        o.categorie === this.filterCategorie
+      );
     }
 
     return filtered;
@@ -46,63 +48,50 @@ export class GestionProduitsComponent implements OnInit {
     private categorieService: CategorieService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadOeuvres();
     this.loadCategories();
   }
 
-  loadOeuvres() {
+  loadOeuvres(): void {
     this.loading.set(true);
-    this.oeuvreService.getAllOeuvres().subscribe({
-      next: (data: any) => {
-        const oeuvres = data.content || data;
-        this.oeuvres.set(oeuvres);
+    this.oeuvreService.getAllOeuvres(undefined, undefined, undefined, undefined, 0, 1000).subscribe({
+      next: (page) => {
+        this.oeuvres.set(page.content || []);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erreur chargement oeuvres:', err);
+        console.error('Erreur chargement œuvres:', err);
         this.loading.set(false);
       }
     });
   }
 
-  loadCategories() {
-    this.categorieService.getAllCategories().subscribe({
-      next: (data: any) => {
-        const categories = data.content || data;
-        this.categories.set(categories);
-      },
-      error: (err) => console.error('Erreur chargement catégories:', err)
+  loadCategories(): void {
+    this.categorieService.getAllCategories(0, 100).subscribe({
+      next: (page) => this.categories.set(page?.content || []),
+      error: () => this.categorieService.getCategoriesActives().subscribe({
+        next: (list) => this.categories.set(list || [])
+      })
     });
   }
 
-  filterOeuvres() {
-    // Le filtrage est automatique via computed signal
+  filterOeuvres(): void {
+    // Le computed s'occupe du filtrage automatiquement
   }
 
-  openModal() {
-    // Implémenter l'ouverture du modal pour ajouter une oeuvre
-    console.log('Ouvrir modal création');
-  }
-
-  editOeuvre(oeuvre: Oeuvre) {
-    // Implémenter l'édition
-    console.log('Éditer oeuvre:', oeuvre);
-  }
-
-  deleteOeuvre(id: string) {
+  deleteOeuvre(id: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette œuvre ?')) {
       this.oeuvreService.deleteOeuvre(id).subscribe({
         next: () => {
-          console.log('Œuvre supprimée');
+          alert('✅ Œuvre supprimée');
           this.loadOeuvres();
         },
-        error: (err) => console.error('Erreur suppression:', err)
+        error: (err) => {
+          console.error('Erreur suppression:', err);
+          alert('❌ Erreur lors de la suppression');
+        }
       });
     }
   }
 }
-
-
-
-

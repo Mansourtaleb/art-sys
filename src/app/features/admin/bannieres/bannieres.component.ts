@@ -36,8 +36,8 @@ export class BannieresComponent {
   selectedFile: File | null = null;
 
   typesLiens = [
-    { value: TypeLienBanniere.OEUVRE, label: 'Vers une ouvre' },
-    { value: TypeLienBanniere.CATEGORIE, label: 'Vers une cat\u007fgorie' },
+    { value: TypeLienBanniere.OEUVRE, label: 'Vers une oeuvre' },
+    { value: TypeLienBanniere.CATEGORIE, label: 'Vers une catégorie' },
     { value: TypeLienBanniere.EXTERNE, label: 'Lien externe' }
   ];
 
@@ -198,15 +198,14 @@ export class BannieresComponent {
 
   getTypeLienLabel(type: TypeLienBanniere): string {
     const found = this.typesLiens.find(t => t.value === type);
-    return found ? found.label : type as unknown as string;
+    return found ? found.label : String(type);
   }
 
   getPlaceholder(typeLien: string): string {
     if (typeLien === 'OEUVRE') return 'ID de l\'oeuvre';
-    if (typeLien === 'CATEGORIE') return 'Nom de la cat\u007fgorie';
+    if (typeLien === 'CATEGORIE') return 'Nom de la catégorie';
     return 'https://exemple.com';
   }
-
   // Convertit les valeurs de date du formulaire vers LocalDateTime (YYYY-MM-DDTHH:mm:ss)
   private normalizeDateInput(value: any): string | undefined {
     if (!value) return undefined;

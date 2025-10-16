@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
 import { Utilisateur } from '../../../core/models/utilisateur.model';
 
-
 @Component({
   selector: 'app-utilisateurs',
   standalone: true,
@@ -15,6 +14,7 @@ import { Utilisateur } from '../../../core/models/utilisateur.model';
 export class UtilisateursComponent implements OnInit {
   utilisateurs = signal<Utilisateur[]>([]);
   loading = signal(false);
+  selectedUser = signal<Utilisateur | null>(null);
 
   // Computed signals pour les statistiques
   nombreClients = computed(() =>
@@ -39,7 +39,6 @@ export class UtilisateursComponent implements OnInit {
     this.loading.set(true);
     this.utilisateurService.getAllUtilisateurs().subscribe({
       next: (data: any) => {
-        // Gérer si la réponse est paginée ou non
         const users = data.content || data;
         this.utilisateurs.set(users);
         this.loading.set(false);
@@ -55,20 +54,22 @@ export class UtilisateursComponent implements OnInit {
     if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       this.utilisateurService.deleteUtilisateur(userId).subscribe({
         next: () => {
-          console.log('Utilisateur supprimé');
+          alert('✅ Utilisateur supprimé');
           this.loadUtilisateurs();
         },
-        error: (err) => console.error('Erreur suppression:', err)
+        error: (err) => {
+          console.error('Erreur suppression:', err);
+          alert('❌ Erreur lors de la suppression');
+        }
       });
     }
   }
 
   viewUser(user: Utilisateur) {
-    // Logique pour voir les détails
-    console.log('Voir utilisateur:', user);
+    this.selectedUser.set(user);
+  }
+
+  closeUserModal() {
+    this.selectedUser.set(null);
   }
 }
-
-
-
-
