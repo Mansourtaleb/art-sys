@@ -1,0 +1,96 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Modifier l'Œuvre</h2>
+
+  <div *ngIf="success()" class="alert alert-success">
+    ✅ Œuvre modifiée avec succès !
+  </div>
+
+  <div *ngIf="error()" class="alert alert-danger">
+    ❌ {{ error() }}
+  </div>
+
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <form *ngIf="!loading()" (ngSubmit)="onSubmit()" #oeuvreForm="ngForm">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="mb-3">
+          <label class="form-label">Titre *</label>
+          <input type="text" class="form-control"
+                 [(ngModel)]="oeuvre.titre"
+                 name="titre" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control"
+                    [(ngModel)]="oeuvre.description"
+                    name="description" rows="4"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Catégorie *</label>
+            <select class="form-select"
+                    [(ngModel)]="oeuvre.categorieId"
+                    name="categorieId" required>
+              <option value="">Sélectionner...</option>
+              <option *ngFor="let cat of categories()" [value]="cat.id">
+                {{ cat.nom }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Prix (DT) *</label>
+            <input type="number" class="form-control"
+                   [(ngModel)]="oeuvre.prix"
+                   name="prix" required min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-control"
+                   [(ngModel)]="oeuvre.quantiteDisponible"
+                   name="quantiteDisponible" min="0">
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Statut</label>
+            <select class="form-select" [(ngModel)]="oeuvre.statut" name="statut">
+              <option value="PUBLIE">Publié</option>
+              <option value="BROUILLON">Brouillon</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label class="form-label">Image</label>
+          <input type="file" class="form-control"
+                 (change)="onFileSelected($event)"
+                 accept="image/*">
+          <img *ngIf="imagePreview()"
+               [src]="imagePreview()"
+               class="img-thumbnail mt-2"
+               style="max-height: 200px; width: 100%; object-fit: cover;">
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button type="submit" class="btn btn-primary"
+              [disabled]="loading() || !oeuvreForm.valid">
+        💾 Enregistrer
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">
+        ❌ Annuler
+      </button>
+    </div>
+  </form>
+</div>
