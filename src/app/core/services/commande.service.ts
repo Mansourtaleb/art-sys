@@ -39,4 +39,13 @@ export class CommandeService {
   updateStatutCommande(id: string, statut: StatutCommande): Observable<Commande> {
     return this.http.put<Commande>(`${this.apiUrl}/${id}/statut`, { statut });
   }
+  // Mes commandes (Client uniquement)
+  getMesCommandes(): Observable<Commande[]> {
+    return this.http.get<Commande[]>(`${this.apiUrl}/mes-commandes`);
+  }
+
+// Annuler une commande
+  annulerCommande(commandeId: string): Observable<Commande> {
+    return this.http.patch<Commande>(`${this.apiUrl}/${commandeId}/annuler`, {});
+  }
 }

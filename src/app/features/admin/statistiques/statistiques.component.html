@@ -1,0 +1,206 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-graph-up"></i> Statistiques Détaillées</h2>
+    <button class="btn btn-success" (click)="exportCSV()">
+      <i class="bi bi-download"></i> Exporter CSV
+    </button>
+  </div>
+
+  <!-- Filtres période -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Période</h5>
+      <div class="btn-group" role="group">
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="periode() === '7j'"
+          [class.btn-outline-primary]="periode() !== '7j'"
+          (click)="changePeriode('7j')">
+          7 derniers jours
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="periode() === '30j'"
+          [class.btn-outline-primary]="periode() !== '30j'"
+          (click)="changePeriode('30j')">
+          30 derniers jours
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="periode() === '90j'"
+          [class.btn-outline-primary]="periode() !== '90j'"
+          (click)="changePeriode('90j')">
+          90 derniers jours
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="periode() === 'annee'"
+          [class.btn-outline-primary]="periode() !== 'annee'"
+          (click)="changePeriode('annee')">
+          Année
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+    </div>
+  } @else {
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <h6 class="card-title">Total Commandes</h6>
+            <h2 class="mb-0">{{ stats().totalCommandes }}</h2>
+            <small>Moyenne: {{ stats().commandesMoyenne | number:'1.1-1' }}/jour</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <h6 class="card-title">Revenu Total</h6>
+            <h2 class="mb-0">{{ stats().totalRevenu | number:'1.0-0' }} DT</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <h6 class="card-title">Panier Moyen</h6>
+            <h2 class="mb-0">{{ stats().panierMoyen | number:'1.0-0' }} DT</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <h6 class="card-title">Taux de Conversion</h6>
+            <h2 class="mb-0">--%</h2>
+            <small>À implémenter</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+      <!-- Évolution CA -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Évolution du Chiffre d'Affaires</h5>
+          </div>
+          <div class="card-body">
+            @if (evolutionCA().length > 0) {
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>CA (DT)</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                    @for (jour of evolutionCA().slice(-10); track jour.date) {
+                      <tr>
+                        <td>{{ jour.date | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ jour.ca | number:'1.0-0' }} DT</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="text-muted">Aucune donnée disponible</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Commandes par statut -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Commandes par Statut</h5>
+          </div>
+          <div class="card-body">
+            @for (stat of commandesParStatut(); track stat.statut) {
+              <div class="mb-2">
+                <div class="d-flex justify-content-between">
+                  <span>{{ stat.label }}</span>
+                  <strong>{{ stat.count }}</strong>
+                </div>
+                <div class="progress" style="height: 5px;">
+                  <div
+                    class="progress-bar"
+                    [style.width.%]="(stat.count / stats().totalCommandes * 100)">
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 10 œuvres -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Top 10 Œuvres les Plus Vendues</h5>
+      </div>
+      <div class="card-body">
+        @if (topOeuvres().length > 0) {
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Image</th>
+                <th>Titre</th>
+                <th>Quantité Vendue</th>
+                <th>Revenu Total</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (oeuvre of topOeuvres(); track oeuvre.id; let i = $index) {
+                  <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                      @if (oeuvre.imageUrl) {
+                        <img
+                          [src]="oeuvre.imageUrl"
+                          [alt]="oeuvre.titre"
+                          class="img-thumbnail"
+                          style="width: 50px; height: 50px; object-fit: cover;">
+                      } @else {
+                        <div class="bg-light d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px;">
+                          <i class="bi bi-image"></i>
+                        </div>
+                      }
+                    </td>
+                    <td>{{ oeuvre.titre }}</td>
+                    <td>{{ oeuvre.quantiteVendue }}</td>
+                    <td>{{ oeuvre.revenu | number:'1.0-0' }} DT</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="text-muted">Aucune vente pour le moment</p>
+        }
+      </div>
+    </div>
+  }
+</div>
